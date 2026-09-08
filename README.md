@@ -6,6 +6,8 @@
 
 M4 Mac mini 从 [迁移与验收步骤](docs/mac-handoff.md) 开始；实测范围见 [跨平台验证](docs/portable-validation.md)。Mac/Linux 默认采用 CPU 传输，GPU 探针通过不等于端到端零拷贝完成。
 
+可直接下载 [预览版 JAR](https://github.com/zhongbai2333/MCAndroidPhone/releases/tag/v0.1.0-prototype)。
+
 ## 快速开始
 
 本机运行时已准备好，开发测试直接运行：

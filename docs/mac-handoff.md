@@ -19,6 +19,12 @@ sh test-phone.sh native-probe
 
 `quick` 不需要 Minecraft 或 Android，只编译独立 Java 核心、运行 Python/协议测试和真实进程清理测试。`pattern --world-smoke` 首次需要下载 Gradle/Minecraft，之后自动创建独立世界验证物品、悬停倾斜、外缘旋转、触控、背包恢复及资源重载。所有运行依然由 Mod 管理器启动。截图位于 `.runtime/evidence/<UUID>/`。正常游戏：`sh test-phone.sh pattern`。
 
+## 无需 Gradle 的预览版
+
+可从 [GitHub 预览版](https://github.com/zhongbai2333/MCAndroidPhone/releases/tag/v0.1.0-prototype) 下载已在 Windows/WSL 构建验证的 JAR，放入 Minecraft 26.1.2 / NeoForge 26.1.2.76 的 mods 目录。Java 25 和 Python 仍需准备。要先测试图案，在游戏目录的 `config/mcandroidphone-runtime.properties` 设置 `backend=pattern` 和正确的 `python` 绝对路径；原生依赖和 Android 镜像不包含在 JAR 中。
+
+截至本次交接，NeoForge Gradle 依赖元数据端点持续返回 502，干净环境完整构建尚未通过；`quick` 和安装好的游戏使用预览版 JAR 不依赖这个构建端点。[详细验证记录](portable-validation.md)
+
 ## QEMU 分阶段验收
 
 先确认管理器可以启动 QEMU，不依赖 Android 镜像：

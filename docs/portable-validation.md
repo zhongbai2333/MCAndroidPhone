@@ -6,7 +6,7 @@
 | --- | --- | --- |
 | Windows AMD64，本机 RTX 5070 Ti Laptop | 独立 NeoForge Mod、JAR 管理 QEMU、Android 1080×1920、真实触屏；进程正常/取消/失败/强制终止；图案与安卓世界测试、倾斜、旋转、收纳恢复、F3+T | D3D11 → OpenGL，零 CPU 像素复制、一次 GPU 缓存复制通过 |
 | Linux AMD64，Ubuntu 24.04 / WSL2 | Python/Java 核心、几何、进程清理；完整 Mod 构建；QEMU 8.2.2 BIOS/TCG；KVM Android 1080×1920 进入 Home 选择界面；Linux Minecraft 图案世界交互与收纳恢复 | D3D12 OpenGL 可用；DMA-BUF 导出/导入能力探针未通过，保持 CPU 路径 |
-| macOS ARM64，目标 M4 | 平台参数与 ARM 启动配置单元测试；POSIX 管理、原生查找、Java 首线程启动和 IOSurface 探针源码已准备 | Mac 实机及 QEMU IOSurface 后端待验证/实现 |
+| macOS ARM64，目标 M4 | GitHub ARM64 macOS runner 的 Python/Java 核心、协议、几何、正常退出/取消/失败/JVM 强杀清理通过；IOSurface 探针编译通过；M4 游戏/QEMU 实测待完成 | Mac 实机及 QEMU IOSurface 后端待验证/实现 |
 | macOS Intel | 平台选择与参数单元测试；共享 POSIX/CPU 路径源码 | 未做实机测试 |
 | Windows ARM64 | 原生架构识别、ARM virt 参数及 WHPX/TCG 选择单元测试 | 未做实机测试，不能推断虚拟机 GPU 互操作可用 |
 | Linux ARM64 | ARM virt 参数及 KVM/TCG 选择单元测试 | 未做实机测试，DMA-BUF 生产后端尚未实现 |
@@ -37,4 +37,6 @@ python scripts/dev.py runtime-smoke --set backend=qemu --set bios=true --set gue
 
 Mac 接续步骤见 [mac-handoff.md](mac-handoff.md)。运行时、Android 镜像、存档和本机证据不上传；GitHub 包含源码和复现步骤。
 
-Mac ARM64 GitHub runner 已编译 IOSurface 探针；该虚拟宿主没有可用的加速 CGL 上下文，因此返回 77，仍需 M4 实机验证。Mac 的僵尸进程组 EPERM 已按组内状态核验处理；协议测试的大于 8 KiB 数据改为并行发送/读取，以兼容 macOS 较小的 socketpair 缓冲区。CI 显式采用与本地相同的 NeoForm 重编译流程，避免自动快速流程依赖的 metadata 端点 502。
+Mac ARM64 GitHub runner 已编译 IOSurface 探针；该虚拟宿主没有可用的加速 CGL 上下文，因此返回 77，仍需 M4 实机验证。Mac 的僵尸进程组 EPERM 已按组内状态核验处理；协议测试的大于 8 KiB 数据改为并行发送/读取，以兼容 macOS 较小的 socketpair 缓冲区。[最终 CI 核心验证](https://github.com/zhongbai2333/MCAndroidPhone/actions/runs/34201894204)：Windows、Ubuntu、macOS 三个核心作业全部通过。Mac 跳过未安装 FFmpeg 和 Windows 专用检查，真实 QEMU/Android 仍需 M4 测试。
+
+CI 完整 Mod 构建仍受上游 `maven.neoforged.net/mojang-meta/.../minecraft-dependencies-26.1.2.module` 持续 HTTP 502 阻断；已限定重试三次。显式使用本地相同的 NeoForm 流程后仍存在该外部故障。Windows 与 WSL 已利用本机依赖缓存完成完整构建；全新 Mac 的 Gradle 构建也可能受影响。可先用 `quick` 或 [预览版 JAR](https://github.com/zhongbai2333/MCAndroidPhone/releases/tag/v0.1.0-prototype) 验证，待上游恢复后重跑完整 CI。

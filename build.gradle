@@ -11,8 +11,7 @@ tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
 neoForge {
     enable {
         version = project.neo_version
-        // Keep CI on the same tested NeoForm pipeline as local builds. The CI
-        // fast path requires a separate Mojang metadata endpoint that returns 502.
+        // Keep CI on the same tested NeoForm decompilation/recompilation pipeline as local builds.
         disableRecompilation = false
     }
     runs {
