@@ -1,0 +1,22 @@
+.gradle/
+**/build/
+run/
+runtime/
+.runtime*/
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.idea/
+*.iml
+local.properties
+*.log
+*.mmap
+*.nv12
+*.bin
+!gradle/wrapper/gradle-wrapper.jar
+
+# Local editor and migration helper state
+.vscode/
+.github/modernize/
+.DS_Store

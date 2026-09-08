@@ -1,0 +1,23 @@
+modLoader="javafml"
+loaderVersion="[4,)"
+license="MIT"
+[[mods]]
+modId="mcandroidphone"
+version="0.1.0-prototype"
+displayName="MC Android Phone"
+authors="zhongbai233"
+description='''An Android phone item with a local display and touch bridge. Standalone phone rendering, input and GPU texture sharing.'''
+[[mixins]]
+config="mcandroidphone.mixins.json"
+[[dependencies.mcandroidphone]]
+modId="neoforge"
+type="required"
+versionRange="[26.1.2.76,26.2)"
+ordering="NONE"
+side="BOTH"
+[[dependencies.mcandroidphone]]
+modId="minecraft"
+type="required"
+versionRange="[26.1.2,26.2)"
+ordering="NONE"
+side="BOTH"

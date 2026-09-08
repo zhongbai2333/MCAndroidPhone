@@ -1,0 +1,20 @@
+# Template only: replace paths with a QEMU virt-compatible ARM64 Android system.
+backend=qemu
+guestArch=arm64
+accel=hvf
+display=vnc
+gpu=virtio
+input=auto
+colorOrder=rgb
+python=/opt/homebrew/bin/python3.13
+qemu=/opt/homebrew/bin/qemu-system-aarch64
+ffmpeg=/opt/homebrew/bin/ffmpeg
+firmware=/opt/homebrew/share/qemu/edk2-aarch64-code.fd
+disk=/absolute/path/android-arm64.qcow2
+diskFormat=qcow2
+memory=4096
+cpus=2
+# Alternative direct-kernel boot (supply the exact arguments for your image):
+# kernel=/absolute/path/Image
+# initrd=/absolute/path/initrd.img
+# kernelAppend=<image-specific QEMU virt boot arguments>

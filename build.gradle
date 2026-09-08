@@ -1,0 +1,77 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.141'
+}
+base { archivesName = 'mcandroidphone' }
+group = 'com.zhongbai233.mcandroidphone'
+version = '0.1.0-prototype'
+repositories { mavenCentral() }
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+neoForge {
+    version = project.neo_version
+    runs {
+        client {
+            client()
+            if (System.getProperty('os.name').startsWith('Mac')) jvmArgument '-XstartOnFirstThread'
+            gameDirectory = rootProject.file('run')
+            jvmArgument '--enable-native-access=ALL-UNNAMED,mcandroidphone'
+            systemProperty 'mcandroidphone.smokeWarmupSeconds', providers.gradleProperty('phoneSmokeWarmupSeconds').getOrElse('0')
+            systemProperty 'mcandroidphone.smoke', providers.gradleProperty('phoneSmoke').getOrElse('false')
+            systemProperty 'mcandroidphone.worldSmoke', providers.gradleProperty('phoneWorldSmoke').getOrElse('false')
+            systemProperty 'mcandroidphone.patternSmoke', providers.gradleProperty('phonePatternSmoke').getOrElse('false')
+            systemProperty 'mcandroidphone.smokeScreenshot', providers.gradleProperty('phoneSmokeScreenshot').getOrElse(rootProject.file('.runtime/android-phone-world-smoke.png').absolutePath)
+            if (providers.gradleProperty('bridgeConfig').isPresent()) {
+                systemProperty 'mcandroidphone.config', rootProject.file(providers.gradleProperty('bridgeConfig').get()).absolutePath
+            }
+            systemProperty 'mcandroidphone.runtimeRoot', rootProject.file(providers.gradleProperty('phoneRuntimeRoot').getOrElse('.runtime')).absolutePath
+            ['Backend','Gpu','Python','Qemu','Iso','Disk','DiskFormat','Kernel','Initrd','Ffmpeg','Angle',
+             'Width','Height','Density','Memory','Cpus','Accel','GuestArch','Display','Firmware','KernelAppend','Input','ColorOrder','Bios'].each { suffix ->
+                def value = providers.gradleProperty('phoneRuntime' + suffix)
+                if (value.isPresent()) systemProperty 'mcandroidphone.runtime' + suffix, value.get()
+            }
+        }
+    }
+    mods {
+        mcandroidphone {
+            sourceSet sourceSets.main
+        }
+    }
+}
+tasks.named('jar', Jar) {
+    manifest.attributes('Implementation-Version': project.version)
+}
+tasks.register('geometrySelfTest', JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.zhongbai233.mcandroidphone.phone.PhoneGeometrySelfTest'
+}
+tasks.named('check') { dependsOn geometrySelfTest, 'coreSelfTest' }
+tasks.named('test') { enabled = false }
+
+// Ship the bridge and its private process supervisor inside the mod. No external scripts directory at runtime.
+tasks.register('bridgeBundle', Zip) {
+    archiveFileName = 'bridge.zip'
+    destinationDirectory = layout.buildDirectory.dir('generated/bridge')
+    from(rootProject.file('bridge')) { include 'mcandroid_bridge/**/*.py'; exclude '**/__pycache__/**' }
+    from(rootProject.file('LICENSE')) { into 'licenses' }
+}
+tasks.named('processResources') {
+    dependsOn bridgeBundle
+    from(tasks.named('bridgeBundle').flatMap { it.archiveFile }) { into 'mcandroidphone/runtime' }
+}
+
+tasks.register('runtimeSelfTest', JavaExec) {
+    dependsOn testClasses, processResources
+    classpath = files(sourceSets.main.output, sourceSets.test.output)
+    mainClass = 'com.zhongbai233.mcandroidphone.core.ManagedRuntimeSelfTest'
+    jvmArgs '--enable-native-access=ALL-UNNAMED'
+    args providers.gradleProperty('runtimeTestPython').getOrElse(rootProject.file(System.getProperty('os.name').startsWith('Windows') ? '.venv/Scripts/python.exe' : '.venv/bin/python3').absolutePath), rootProject.file('.runtime').absolutePath
+}
+
+tasks.register('coreSelfTest', JavaExec) {
+    dependsOn testClasses
+    classpath = files(sourceSets.main.output, sourceSets.test.output)
+    mainClass = 'com.zhongbai233.mcandroidphone.core.CoreSelfTest'
+    jvmArgs '--enable-native-access=ALL-UNNAMED'
+}

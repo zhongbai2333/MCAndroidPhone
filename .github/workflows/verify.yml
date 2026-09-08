@@ -1,0 +1,45 @@
+name: Verify portable runtime
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  portable-core:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - run: python scripts/dev.py check
+      - name: Core, protocol and owned-process lifecycle
+        run: python scripts/dev.py quick
+      - name: Compile and probe IOSurface on macOS
+        if: runner.os == 'macOS'
+        run: python scripts/dev.py native-probe
+  mod:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - run: sh gradlew build --no-daemon
+      - uses: actions/upload-artifact@v4
+        with:
+          name: mcandroidphone-jar
+          path: build/libs/*.jar
+          if-no-files-found: error
