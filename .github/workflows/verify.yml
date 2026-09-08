@@ -23,11 +23,11 @@ jobs:
           distribution: temurin
           java-version: '25'
       - run: python scripts/dev.py check
-      - name: Core, protocol and owned-process lifecycle
-        run: python scripts/dev.py quick
       - name: Compile and probe IOSurface on macOS
         if: runner.os == 'macOS'
         run: python scripts/dev.py native-probe
+      - name: Core, protocol and owned-process lifecycle
+        run: python scripts/dev.py quick
   mod:
     runs-on: ubuntu-latest
     timeout-minutes: 25
