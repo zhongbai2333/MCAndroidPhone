@@ -68,7 +68,9 @@ def main():
         command=[java_tool('java'),'--enable-native-access=ALL-UNNAMED','-cp',str(classes)]
         if args.mode=='quick':
             for directory in ('bridge/tests','scripts/tests'):
-                subprocess.run([sys.executable,'-m','unittest','discover','-s',directory,'-q'],cwd=ROOT,env=env,check=True)
+                # Bound each suite and show the blocked thread if a new host exposes a deadlock.
+                runner='import faulthandler,runpy; faulthandler.dump_traceback_later(120,exit=True); runpy.run_module("unittest",run_name="__main__"); faulthandler.cancel_dump_traceback_later()'
+                subprocess.run([sys.executable,'-u','-c',runner,'discover','-s',directory,'-v'],cwd=ROOT,env=env,check=True)
             subprocess.run([*command,'com.zhongbai233.mcandroidphone.core.CoreSelfTest'],check=True)
             subprocess.run([*command,'com.zhongbai233.mcandroidphone.phone.PhoneGeometrySelfTest'],check=True)
             subprocess.run([*command,'com.zhongbai233.mcandroidphone.core.ManagedRuntimeSelfTest',sys.executable,str(ROOT/'.runtime')],check=True)

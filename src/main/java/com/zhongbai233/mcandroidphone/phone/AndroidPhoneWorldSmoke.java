@@ -32,6 +32,7 @@ final class AndroidPhoneWorldSmoke {
     private enum Stage { NEW, JOINING, EQUIPPING, FRAMES, STOWED, REEQUIPPED, RELOADING, SCREENSHOT, DONE }
     private static Stage stage = Stage.NEW;
     private static int titleTicks;
+    private static long startupNanos;
     private static Object originalConnection;
     private static long originalEpoch, stowUntil, resumeDraws;
     private static boolean stowStarted;
@@ -78,6 +79,13 @@ final class AndroidPhoneWorldSmoke {
 
     private static void tickChecked(Minecraft mc) throws Exception {
         if (stage == Stage.NEW) {
+            if(startupNanos==0)startupNanos=System.nanoTime();
+            if(System.nanoTime()-startupNanos>TimeUnit.SECONDS.toNanos(240))
+                throw new IllegalStateException("Startup did not reach title: "+(mc.screen==null?"none":mc.screen.getClass().getName()));
+            if(mc.getOverlay()==null && mc.screen instanceof net.minecraft.client.gui.screens.AccessibilityOnboardingScreen) {
+                LOGGER.info("ANDROIDPHONE_WORLD_SMOKE_ONBOARDING: continuing fresh-install accessibility page");
+                mc.screen.onClose();return;
+            }
             if (mc.player != null || mc.level != null || mc.getSingleplayerServer() != null)
                 throw new IllegalStateException("Refusing smoke inside an already open world");
             if (!(mc.screen instanceof TitleScreen) || ++titleTicks < 20) return;

@@ -23,7 +23,7 @@ SPEC.loader.exec_module(launcher)
 class LauncherTests(unittest.TestCase):
     def setUp(self):
         self.temporary = tempfile.TemporaryDirectory(prefix="phone-launcher-tests-")
-        self.project = Path(self.temporary.name)
+        self.project = Path(self.temporary.name).resolve()
         self.root = mock.patch.object(launcher, "ROOT", self.project)
         self.root.start()
         self.quiet = mock.patch.object(launcher, "say")

@@ -83,7 +83,7 @@ class CommandTests(unittest.TestCase):
 
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
-        self.project = Path(self.temp.name) / "project space,comma"
+        self.project = Path(self.temp.name).resolve() / "project space,comma"
         self.project.mkdir()
 
     def tearDown(self):
