@@ -11,7 +11,7 @@
 | Windows ARM64 | 原生架构识别、ARM virt 参数及 WHPX/TCG 选择单元测试 | 未做实机测试，不能推断虚拟机 GPU 互操作可用 |
 | Linux ARM64 | ARM virt 参数及 KVM/TCG 选择单元测试 | 未做实机测试，DMA-BUF 生产后端尚未实现 |
 
-Windows 通过 `gradle build runtimeSelfTest` 与 `scripts/dev.py quick`。Python bridge 112 项（Windows 跳过 2 项 POSIX 测试），脚本 76 项。Linux bridge 112 项（跳过 1 项 Windows 实装测试），脚本 76 项（跳过 2 项 Windows Job 测试），其余通过。FFmpeg 的 POSIX 退出问题已修复：先关闭原始视频 stdin 解除阻塞，再结束和等待进程。
+Windows 通过 `gradle build runtimeSelfTest` 与 `scripts/dev.py quick`。Python bridge 113 项（Windows 跳过 3 项 POSIX 测试），脚本 76 项。Linux bridge 113 项（跳过 1 项 Windows 实装测试），脚本 76 项（跳过 2 项 Windows Job 测试），其余通过。FFmpeg 的 POSIX 退出问题已修复：先关闭原始视频 stdin 解除阻塞，再结束和等待进程。
 
 Windows 图案世界证据目录 `.runtime/evidence/1abdf229-4d55-42e5-b206-7d6619ce2157/`，日志确认 `ANDROIDPHONE_HOVER_OK`、`ANDROIDPHONE_ROTATION_OK`、输入拦截、原连接/epoch 收纳恢复与资源重载；已目视检查横屏下缘与手部相接。真实安卓 GPU 世界目录 `.runtime/evidence/135f86b6-7ff0-4a2a-aa94-268227101147/`，进入 Android Home 选择界面，正常完成收纳及重载。
 
@@ -36,3 +36,5 @@ python scripts/dev.py runtime-smoke --set backend=qemu --set bios=true --set gue
 `runtime-smoke` 可指定 `expectedWidth`、`expectedHeight`、`warmupSeconds`；通过后保存一帧诊断 NV12。BIOS 或开机动画不能证明安卓桌面、触控或 GPU 导入完成。世界测试使用新世界，不触碰已有存档。GitHub CI 包含三个宿主的核心/生命周期测试、Linux Mod 构建及 Mac 探针编译；CI 结果不等于六个平台实机验收。
 
 Mac 接续步骤见 [mac-handoff.md](mac-handoff.md)。运行时、Android 镜像、存档和本机证据不上传；GitHub 包含源码和复现步骤。
+
+Mac ARM64 GitHub runner 已编译 IOSurface 探针；该虚拟宿主没有可用的加速 CGL 上下文，因此返回 77，仍需 M4 实机验证。Mac 的僵尸进程组 EPERM 已按组内状态核验处理；协议测试的大于 8 KiB 数据改为并行发送/读取，以兼容 macOS 较小的 socketpair 缓冲区。CI 显式采用与本地相同的 NeoForm 重编译流程，避免自动快速流程依赖的 metadata 端点 502。

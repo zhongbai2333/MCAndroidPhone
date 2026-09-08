@@ -106,9 +106,21 @@ class SessionTests(unittest.TestCase):
         reader = lines(self.reader, stop)
         self.assertEqual(["TOUCH", "DOWN", "0.5", "0.4"], next(reader))
         self.assertEqual(["KEY", "HOME"], next(reader))
-        self.writer.sendall(b"x" * (MAX_LINE + 1))
-        with self.assertRaises(ProtocolError):
-            next(reader)
+        # Darwin socketpair buffers can be smaller than MAX_LINE. Feed and read
+        # concurrently so this tests the parser limit rather than OS buffer capacity.
+        errors=[]
+        def oversized_line():
+            try:self.writer.sendall(b"x" * (MAX_LINE + 1))
+            except Exception as error:errors.append(error)
+        sender=threading.Thread(target=oversized_line,daemon=True)
+        self.writer.settimeout(3)
+        sender.start()
+        try:
+            with self.assertRaises(ProtocolError):next(reader)
+        finally:
+            sender.join(4)
+        self.assertFalse(sender.is_alive())
+        self.assertEqual([],errors)
 
     def test_pattern_responds_to_touch_navigation_and_text(self):
         pattern = PatternBackend(32, 48, 30)

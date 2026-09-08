@@ -9,7 +9,12 @@ repositories { mavenCentral() }
 java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
 neoForge {
-    version = project.neo_version
+    enable {
+        version = project.neo_version
+        // Keep CI on the same tested NeoForm pipeline as local builds. The CI
+        // fast path requires a separate Mojang metadata endpoint that returns 502.
+        disableRecompilation = false
+    }
     runs {
         client {
             client()
