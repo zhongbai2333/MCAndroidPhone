@@ -4,7 +4,6 @@ The child is created only after G arrives. It and its descendants share a new
 session, so cleanup never signals the parent, a reused name, or an unrelated VM.
 """
 import argparse
-import contextlib
 import json
 import os
 from pathlib import Path
@@ -13,6 +12,24 @@ import subprocess
 import sys
 import threading
 import time
+
+
+def signal_owned_group(pid, signum):
+    try:
+        os.killpg(pid, signum)
+    except ProcessLookupError:
+        return
+    except PermissionError:
+        # XNU excludes zombies from killpg's iterator and reports EPERM when
+        # only the unreaped leader remains. Do not swallow real permission failures.
+        if sys.platform != 'darwin': raise
+        status = os.waitid(os.P_PID, pid, os.WEXITED | os.WNOHANG | os.WNOWAIT)
+        if status is None or status.si_pid != pid: raise
+        result = subprocess.run(['/bin/ps', '-axo', 'pgid=,stat='], capture_output=True,
+                                text=True, timeout=3, check=True)
+        members = [row.split()[1] for row in result.stdout.splitlines()
+                   if len(row.split()) == 2 and row.split()[0] == str(pid)]
+        if any(not state.startswith('Z') for state in members): raise
 
 
 def main():
@@ -44,10 +61,12 @@ def main():
             status = os.waitid(os.P_PID, child.pid, os.WEXITED | os.WNOHANG | os.WNOWAIT)
             if status is not None: break
     finally:
-        with contextlib.suppress(ProcessLookupError): os.killpg(child.pid, signal.SIGTERM)
-        time.sleep(.25)
-        with contextlib.suppress(ProcessLookupError): os.killpg(child.pid, signal.SIGKILL)
-        child.wait(timeout=3)
+        try:
+            signal_owned_group(child.pid, signal.SIGTERM)
+            time.sleep(.25)
+            signal_owned_group(child.pid, signal.SIGKILL)
+        finally:
+            child.wait(timeout=3)
     return child.returncode if child.returncode >= 0 else 0
 
 

@@ -74,6 +74,16 @@ class PosixGateTests(unittest.TestCase):
                 if not gate.stdin.closed:gate.stdin.close()
                 if gate.poll() is None:gate.terminate();gate.wait(timeout=8)
 
+    def test_darwin_zombie_only_eperm_does_not_hide_live_group_failure(self):
+        from types import SimpleNamespace
+        from mcandroid_bridge._launch.posix_gate import signal_owned_group
+        with patch('os.killpg',side_effect=PermissionError), patch('sys.platform','darwin'), \
+             patch('os.waitid',return_value=SimpleNamespace(si_pid=123)), \
+             patch('subprocess.run',return_value=SimpleNamespace(stdout='123 Z\n')) as ps:
+            signal_owned_group(123,signal.SIGKILL)
+            ps.return_value.stdout='123 Z\n123 S\n'
+            with self.assertRaises(PermissionError):signal_owned_group(123,signal.SIGKILL)
+
     def test_closed_gate_never_launches(self):
         with tempfile.TemporaryDirectory() as tmp:
             p=subprocess.run([sys.executable,'-m','mcandroid_bridge._launch.posix_gate','--pid-file',tmp+'/pid.json','--',sys.executable,'-c','raise Exception("must not launch")'],input=b'',timeout=5)
