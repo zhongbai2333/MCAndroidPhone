@@ -1,24 +1,30 @@
 # MCAndroidPhone
 
+**Windows / WSL2 接续开发：先读 [2026-09-09 交接文档](docs/windows-wsl-handoff-2026-09-09.md)**，包含 Go 镜像构建、Windows 回归、源码与本地产物边界。
+
 在 Minecraft 中使用真正运行的安卓手机。独立 NeoForge Mod，无需 NCPB、NetMusic 或 SceneEditor；目标为 Minecraft 26.1.2、NeoForge 26.1.2.76、Java 25。
 
-**主手右键手机后，由 JAR 在后台启动 QEMU、内置 bridge 和所需的 FFmpeg，再连接画面与触控。** 不必预先启动桥接脚本。自动管理已加入 Windows/Linux/macOS 与 AMD64/ARM64 平台选择，使用已有的原生运行时和 Android 镜像；这些二进制仍需在本机准备一次。[配置与启动说明](docs/runtime.md)
+**主手右键手机后，由 Java 在后台启动 QEMU 和所需的 FFmpeg，并直接处理画面与触控；玩家无需安装 Python。** 不必预先启动桥接脚本。普通构建使用外部运行时；平台内置包可自动校验、解压原生依赖与 Android 镜像。手机数据按物品 UUID 持久保存。Mac ARM64 本地包与摄像头通道的实际验收范围见 [本机功能验收](docs/local-features.md)，六平台成品尚未全部生成。[配置与启动说明](docs/runtime.md)
 
 M4 Mac mini 从 [迁移与验收步骤](docs/mac-handoff.md) 开始；实测范围见 [跨平台验证](docs/portable-validation.md)。Mac/Linux 默认采用 CPU 传输，GPU 探针通过不等于端到端零拷贝完成。
 
-可直接下载 [预览版 JAR](https://github.com/zhongbai2333/MCAndroidPhone/releases/tag/v0.1.0-prototype)。
+M4 已通过 Android 16 / LineageOS ARM64 的真实启动、Java 触控和游戏内滑动解锁、桌面显示测试，见 [Android 实测记录](docs/android-arm64-validation.md) 与 [匹配镜像的配置模板](configs/mac-lineage-arm64.properties.example)。
+
+游戏位置/姿态联动已完成第一阶段的真实 Android API 验证；正式 HAL 接入和双架构 Go 镜像构建配置已加入，完整定制系统尚待 Linux 编译。见 [联动实现与验收边界](docs/game-environment.md)、[镜像构建](android/image/README.md)。
+
+当前 Java 迁移产物需本地构建；[此前发布的预览版](https://github.com/zhongbai2333/MCAndroidPhone/releases/tag/v0.1.0-prototype) 使用旧 Python 后端。此次未更新远端发布。
 
 ## 快速开始
 
 本机运行时已准备好，开发测试直接运行：
 
 ```bat
-test-phone.cmd
+test-phone.cmd qemu
 rem 或在已配置 Java 25 的终端运行
 gradlew.bat runClient
 ```
 
-进入创造世界，取出“安卓手机”，或执行 `/give @s mcandroidphone:android_phone`，拿在主手右键开机。默认 1080×1920、480 dpi、D-Bus 直接显示、真实单指触屏。首次冷启动需等待安卓初始化；Live 镜像的数据在关机后丢弃。
+进入创造世界，取出“安卓手机”，或执行 `/give @s mcandroidphone:android_phone`，拿在主手右键开机。默认 1080×1920、480 dpi；Windows 使用 D-Bus，Mac/Linux 使用 VNC；输入按 QEMU 能力选择触屏或鼠标。首次冷启动需等待安卓初始化；Live 镜像的数据在关机后丢弃。
 
 ```bat
 test-phone.cmd qemu --qemu-gpu virgl
@@ -33,12 +39,13 @@ test-phone.cmd quick
 ## 操作
 
 - 主手右键开机、连接并进入触控；左键点击或拖动。
-- 指针悬停带动机身倾斜；拖动设备外缘旋转，松手吸附横/竖屏。使用 NCPB 的下方握持枢轴及横屏左移，独立运行。此操作旋转物理机身，不向 Android 注入方向传感器。
-- 右键返回，Home 回桌面，End 打开最近任务，Esc 退出触控。
+- 指针悬停带动机身倾斜；拖动设备外缘旋转，松手吸附横/竖屏。使用 NCPB 的下方握持枢轴及横屏左移，独立运行。默认只旋转机身；启用可选环境通道后，也会把姿态发给匹配的 Android 接收服务。
+- 右键返回，Home 回桌面，End 切换应用（QEMU 使用 Alt+Tab），Esc 退出触控。
 - 收进背包、切换快捷栏后保留运行和画面，拿回主手直接显示。
 - F8 或 `/androidphone disconnect` 断开画面，安卓继续运行。
 - `/androidphone poweroff` 关闭本 Mod 启动的运行环境；退出世界或游戏也会清理。
 - `/androidphone runtime` 查看启动状态和日志目录。
+- `/androidphone environment` 查看可选游戏环境通道状态。
 
 ## 一个主代码项目
 
@@ -50,7 +57,7 @@ Java `core` 和 `mod` 已合并为根 Gradle 项目，不再分别构建。协�
 | `src/main/java/.../phone`、`gpu` | 独立物品、触控、显示与 GPU 导入 |
 | `src/main/resources` | 模组元数据、模型和 shader |
 | `src/test/java` | 核心、几何和真实进程生命周期测试 |
-| `bridge/mcandroid_bridge` | Python 后端与进程管理源码，构建时打入同一 JAR |
+| `bridge/mcandroid_bridge` | 旧协议/SDK 外部诊断与回归对照，不进入 JAR |
 | `scripts` | 开发测试、环境准备和兼容诊断工具 |
 | `docs` | 配置、协议、架构和验证记录 |
 
@@ -67,8 +74,8 @@ $env:PYTHONPATH = Join-Path $PWD 'bridge'
 .\.venv\Scripts\python.exe -m unittest discover -s scripts/tests -q
 ```
 
-`runtimeSelfTest` 需要 Python（Mac 要求 3.13+），验证启动、取消、失败、正常清理及 JVM 被强制结束后的子进程清理。[验证记录](docs/validation.md)
+`runtimeSelfTest` 和 `test-phone.cmd quick` 只需要 Java，验证 QMP/RFB/D-Bus、帧租约、启动取消、阻塞管道及 JVM 强杀后的子孙进程清理。上面的 Python 命令仅用于旧外部诊断回归。[Java 迁移与实测](docs/java-runtime-migration.md)
 
-当前只管理一台本机设备，不支持音频、多指、多人共享或持久化手机数据盘。Android 镜像、QEMU/DLL/固件、Python 解释器及 FFmpeg/ANGLE 仍外置；bridge 源码和管理逻辑已经内置 JAR。SDK Emulator 保留外部诊断入口；VNC/BIOS 也可由管理器启动。
+当前不支持音频、多指和多人共享。手机数据已支持按物品 UUID 持久保存，正常关机仍需镜像配合，详见 [关机契约](docs/guest-shutdown.md)。普通模组构建使用外置 Android 镜像、QEMU/DLL/固件及 FFmpeg/ANGLE；平台内置候选另行打包，尚未六平台发布。Windows D-Bus/D3D11 的 Java 版本仍需 Windows 实机复测。SDK Emulator 保留外部诊断入口；VNC/BIOS 也可由管理器启动。
 
 项目代码为 MIT；第三方原生运行时和系统镜像遵循各自许可证。

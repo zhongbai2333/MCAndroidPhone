@@ -1,0 +1,17 @@
+{
+  "schema": 1,
+  "status": "partial-local-validation-no-release",
+  "androidBranch": "lineage-23.2",
+  "images": {
+    "arm64": "lineage_virtio_arm64only_go",
+    "amd64": "lineage_virtio_x86_64_go"
+  },
+  "packages": [
+    {"platform": "windows-amd64", "image": "amd64", "accelerator": "whpx"},
+    {"platform": "windows-arm64", "image": "arm64", "accelerator": "whpx"},
+    {"platform": "linux-amd64", "image": "amd64", "accelerator": "kvm"},
+    {"platform": "linux-arm64", "image": "arm64", "accelerator": "kvm"},
+    {"platform": "macos-amd64", "image": "amd64", "accelerator": "hvf"},
+    {"platform": "macos-arm64", "image": "arm64", "accelerator": "hvf", "validation": "local-stock-android-bundle-and-persistence-tested; custom-go-image-not-built"}
+  ]
+}

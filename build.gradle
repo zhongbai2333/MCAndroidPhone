@@ -6,6 +6,9 @@ base { archivesName = 'mcandroidphone' }
 group = 'com.zhongbai233.mcandroidphone'
 version = '0.1.0-prototype'
 repositories { mavenCentral() }
+// Private resource, not a shared Minecraft dependency or a second runtime installation.
+configurations { xzCodec { transitive = false } }
+dependencies { xzCodec 'org.tukaani:xz:1.12' }
 java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
 neoForge {
@@ -24,13 +27,15 @@ neoForge {
             systemProperty 'mcandroidphone.smoke', providers.gradleProperty('phoneSmoke').getOrElse('false')
             systemProperty 'mcandroidphone.worldSmoke', providers.gradleProperty('phoneWorldSmoke').getOrElse('false')
             systemProperty 'mcandroidphone.patternSmoke', providers.gradleProperty('phonePatternSmoke').getOrElse('false')
+            systemProperty 'mcandroidphone.androidSmoke', providers.gradleProperty('phoneAndroidSmoke').getOrElse('false')
+            systemProperty 'mcandroidphone.environmentSmoke', providers.gradleProperty('phoneEnvironmentSmoke').getOrElse('false')
             systemProperty 'mcandroidphone.smokeScreenshot', providers.gradleProperty('phoneSmokeScreenshot').getOrElse(rootProject.file('.runtime/android-phone-world-smoke.png').absolutePath)
             if (providers.gradleProperty('bridgeConfig').isPresent()) {
                 systemProperty 'mcandroidphone.config', rootProject.file(providers.gradleProperty('bridgeConfig').get()).absolutePath
             }
             systemProperty 'mcandroidphone.runtimeRoot', rootProject.file(providers.gradleProperty('phoneRuntimeRoot').getOrElse('.runtime')).absolutePath
-            ['Backend','Gpu','Python','Qemu','Iso','Disk','DiskFormat','Kernel','Initrd','Ffmpeg','Angle',
-             'Width','Height','Density','Memory','Cpus','Accel','GuestArch','Display','Firmware','KernelAppend','Input','ColorOrder','Bios'].each { suffix ->
+            ['Backend','Gpu','Qemu','Iso','Disk','DiskFormat','DataDisk','DataDiskFormat','FirmwareVars','FirmwareVarsFormat','AdbPort','Kernel','Initrd','Ffmpeg','Angle',
+             'Width','Height','Density','Memory','Cpus','Accel','GuestArch','Display','Firmware','KernelAppend','Input','ColorOrder','Bios','Environment','Storage','DiskLayout','ShutdownMethod','QemuData','Camera','CameraTransport'].each { suffix ->
                 def value = providers.gradleProperty('phoneRuntime' + suffix)
                 if (value.isPresent()) systemProperty 'mcandroidphone.runtime' + suffix, value.get()
             }
@@ -51,18 +56,55 @@ tasks.register('geometrySelfTest', JavaExec) {
     mainClass = 'com.zhongbai233.mcandroidphone.phone.PhoneGeometrySelfTest'
 }
 tasks.named('check') { dependsOn geometrySelfTest, 'coreSelfTest' }
+tasks.register('environmentSelfTest', JavaExec) {
+    dependsOn testClasses
+    classpath = files(sourceSets.main.output, sourceSets.test.output)
+    mainClass = 'com.zhongbai233.mcandroidphone.core.EnvironmentSelfTest'
+}
+tasks.named('check') { dependsOn 'environmentSelfTest' }
+tasks.register('storageBundleSelfTest', JavaExec) {
+    dependsOn testClasses
+    classpath = files(sourceSets.main.output, sourceSets.test.output)
+    mainClass = 'com.zhongbai233.mcandroidphone.core.StorageBundleSelfTest'
+}
+tasks.named('check') { dependsOn 'storageBundleSelfTest' }
+tasks.register('sharedSystemDiskSelfTest', JavaExec) {
+    dependsOn testClasses
+    classpath = sourceSets.test.runtimeClasspath
+    mainClass = 'com.zhongbai233.mcandroidphone.core.SharedSystemDiskSelfTest'
+}
+tasks.named('check') { dependsOn 'sharedSystemDiskSelfTest' }
+tasks.register('qmpShutdownSelfTest', JavaExec) {
+    dependsOn testClasses
+    classpath = files(sourceSets.main.output, sourceSets.test.output)
+    mainClass = 'com.zhongbai233.mcandroidphone.core.QmpShutdownSelfTest'
+}
+tasks.named('check') { dependsOn 'qmpShutdownSelfTest' }
+tasks.register('cameraChannelSelfTest', JavaExec) {
+    dependsOn testClasses
+    classpath = files(sourceSets.main.output, sourceSets.test.output)
+    mainClass = 'com.zhongbai233.mcandroidphone.core.CameraChannelSelfTest'
+}
+tasks.named('check') { dependsOn 'cameraChannelSelfTest' }
 tasks.named('test') { enabled = false }
 
-// Ship the bridge and its private process supervisor inside the mod. No external scripts directory at runtime.
-tasks.register('bridgeBundle', Zip) {
-    archiveFileName = 'bridge.zip'
-    destinationDirectory = layout.buildDirectory.dir('generated/bridge')
-    from(rootProject.file('bridge')) { include 'mcandroid_bridge/**/*.py'; exclude '**/__pycache__/**' }
-    from(rootProject.file('LICENSE')) { into 'licenses' }
+// Only the small native-process guardian needs a separate JVM. The backend runs in Minecraft.
+tasks.register('nativeGuardBundle', Jar) {
+    dependsOn compileJava
+    archiveFileName = 'native-guard.jar'
+    destinationDirectory = layout.buildDirectory.dir('generated/runtime')
+    from(tasks.named('compileJava').flatMap { it.destinationDirectory }) {
+        include 'com/zhongbai233/mcandroidphone/core/NativeGuard*.class'
+        include 'com/zhongbai233/mcandroidphone/core/Json*.class'
+    }
 }
 tasks.named('processResources') {
-    dependsOn bridgeBundle
-    from(tasks.named('bridgeBundle').flatMap { it.archiveFile }) { into 'mcandroidphone/runtime' }
+    dependsOn nativeGuardBundle
+    from(configurations.xzCodec) {
+        into 'mcandroidphone/runtime'
+        rename { 'xz-codec.jar' }
+    }
+    from(tasks.named('nativeGuardBundle').flatMap { it.archiveFile }) { into 'mcandroidphone/runtime' }
 }
 
 tasks.register('runtimeSelfTest', JavaExec) {
@@ -70,7 +112,7 @@ tasks.register('runtimeSelfTest', JavaExec) {
     classpath = files(sourceSets.main.output, sourceSets.test.output)
     mainClass = 'com.zhongbai233.mcandroidphone.core.ManagedRuntimeSelfTest'
     jvmArgs '--enable-native-access=ALL-UNNAMED'
-    args providers.gradleProperty('runtimeTestPython').getOrElse(rootProject.file(System.getProperty('os.name').startsWith('Windows') ? '.venv/Scripts/python.exe' : '.venv/bin/python3').absolutePath), rootProject.file('.runtime').absolutePath
+    args rootProject.file('.runtime').absolutePath
 }
 
 tasks.register('coreSelfTest', JavaExec) {
@@ -79,3 +121,22 @@ tasks.register('coreSelfTest', JavaExec) {
     mainClass = 'com.zhongbai233.mcandroidphone.core.CoreSelfTest'
     jvmArgs '--enable-native-access=ALL-UNNAMED'
 }
+
+tasks.register('runtimeSmoke', JavaExec) {
+    dependsOn testClasses, processResources
+    classpath = files(sourceSets.main.output, sourceSets.test.output)
+    mainClass = 'com.zhongbai233.mcandroidphone.core.RuntimeSmoke'
+    jvmArgs '--enable-native-access=ALL-UNNAMED'
+    args rootProject.file('.runtime').absolutePath
+    ['backend','qemu','ffmpeg','guestArch','accel','firmware','bios','input','display','gpu','width','height','memory','cpus','iso','disk','dataDisk','dataDiskFormat','firmwareVars','firmwareVarsFormat','adbPort','kernel','initrd','kernelAppend','colorOrder','environment','expectedWidth','expectedHeight','warmupSeconds'].each { key ->
+        def value = providers.gradleProperty('runtime.' + key)
+        if (value.isPresent()) args key + '=' + value.get()
+    }
+}
+
+tasks.register('compressedBundleSelfTest', JavaExec) {
+    dependsOn testClasses, processResources
+    classpath = files(sourceSets.main.output, sourceSets.test.output)
+    mainClass = 'com.zhongbai233.mcandroidphone.core.CompressedBundleSelfTest'
+}
+tasks.named('check') { dependsOn 'compressedBundleSelfTest' }

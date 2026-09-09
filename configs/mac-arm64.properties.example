@@ -6,12 +6,19 @@ display=vnc
 gpu=virtio
 input=auto
 colorOrder=rgb
-python=/opt/homebrew/bin/python3.13
 qemu=/opt/homebrew/bin/qemu-system-aarch64
 ffmpeg=/opt/homebrew/bin/ffmpeg
 firmware=/opt/homebrew/share/qemu/edk2-aarch64-code.fd
 disk=/absolute/path/android-arm64.qcow2
 diskFormat=qcow2
+# QEMU/UTM LineageOS images with separate system and user data disks:
+# disk=/absolute/path/LineageOS.utm/Data/vda.qcow2
+# dataDisk=/absolute/path/LineageOS.utm/Data/vdb.qcow2
+# dataDiskFormat=qcow2
+# firmwareVars=/absolute/path/LineageOS.utm/Data/efi_vars.fd
+# firmwareVarsFormat=qcow2
+# Optional debugging, forwarded only on 127.0.0.1; disabled by default:
+# adbPort=15555
 memory=4096
 cpus=2
 # Alternative direct-kernel boot (supply the exact arguments for your image):

@@ -6,6 +6,19 @@ on:
 permissions:
   contents: read
 jobs:
+  go-overlay:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '25'
+      - name: Go product configuration and patch safety (not an Android build)
+        run: java android/image/tests/PrepareSelfTest.java
+      - name: Check Linux image build script syntax
+        run: bash -n android/image/build-go.sh
   portable-core:
     strategy:
       fail-fast: false
@@ -15,19 +28,32 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: '3.13'
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '25'
-      - run: python scripts/dev.py check
+      - run: java scripts/Dev.java check
+      - name: Reproducible runtime package and cache identity
+        run: java scripts/PackageRuntimeSelfTest.java
       - name: Compile and probe IOSurface on macOS
         if: runner.os == 'macOS'
-        run: python scripts/dev.py native-probe
+        run: java scripts/Dev.java native-probe
       - name: Core, protocol and owned-process lifecycle
-        run: python scripts/dev.py quick
+        run: java scripts/Dev.java quick
+  legacy-diagnostics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - name: Legacy external bridge regression
+        env:
+          PYTHONPATH: bridge
+        run: |
+          python -m unittest discover -s bridge/tests -q
+          python -m unittest discover -s scripts/tests -q
   mod:
     runs-on: ubuntu-latest
     timeout-minutes: 25
@@ -47,6 +73,8 @@ jobs:
             sleep 10
           done
           exit 1
+      - name: Verify compressed runtime packaging
+        run: java scripts/PackageRuntimeXZSelfTest.java build/libs/mcandroidphone-0.1.0-prototype.jar
       - uses: actions/upload-artifact@v4
         with:
           name: mcandroidphone-jar

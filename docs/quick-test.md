@@ -1,41 +1,32 @@
 # 开发测试入口
 
-`test-phone.cmd` 默认等同 `test-phone.cmd qemu`：查找开发用 Java/Python 并启动 Minecraft。真正的 QEMU、bridge 和 FFmpeg 由 Mod 在右键手机时启动。普通游戏安装不需要该脚本；配置见 [JAR 运行环境](runtime.md)。
+`test-phone.sh` / `test-phone.cmd` 使用 Java 25 执行 `scripts/Dev.java`，默认启动诊断图模式。普通安装直接在游戏中右键手机，配置见 [运行环境](runtime.md)。
 
-| 命令 | 用途 |
+| 命令（Windows 换为 test-phone.cmd） | 用途 |
 | --- | --- |
-| `test-phone.cmd` | 默认 QEMU，进入世界后右键开机 |
-| `test-phone.cmd qemu --qemu-gpu virgl` | JAR 管理的实验 GPU 模式 |
-| `test-phone.cmd pattern --world-smoke` | JAR 启动测试图，自动验证显示与触控 |
-| `test-phone.cmd quick` | 无 MC/模拟器的核心与协议检查 |
-| `test-phone.cmd check` | 只检查依赖，不启动服务 |
-| `test-phone.cmd android` | SDK Emulator 兼容诊断，由脚本预启动 |
-| `test-phone.cmd qemu --qemu-bios --world-smoke` | 外部管理的固件显示诊断 |
+| `sh test-phone.sh check` | 显示 Java 和宿主架构 |
+| `sh test-phone.sh quick` | 独立编译 Java 核心，验证协议、几何及真实进程清理，无需 Gradle 或 Python |
+| `sh test-phone.sh build` | 构建 NeoForge 模组 |
+| `sh test-phone.sh pattern --world-smoke` | Java 诊断图，自动验证游戏内显示和触控 |
+| `sh test-phone.sh qemu` | 进入游戏后启动已配置的 Android |
+| `sh test-phone.sh qemu --android-smoke --warmup 60` | 需已初始化 Android；创建测试世界，投影鼠标滑动解锁、截图、收纳与重载 |
+| `sh test-phone.sh qemu --gpu virgl` | Windows 实验 D3D11 共享纹理 |
+| `sh test-phone.sh bios --world-smoke` | x86 BIOS 固件诊断，跨架构自动 TCG |
+| `sh test-phone.sh runtime-smoke --set backend=pattern` | 不启动 MC，直接测试 Java 运行时画面 |
 
-已缓存环境不需重新构造。第一次开发构建可能下载 Gradle/Minecraft；SDK 后端可能安装其 Python gRPC 依赖。项目不自动下载 Android 系统镜像或修改系统环境变量。
+通过 `--set KEY=VALUE` 设置运行参数，路径包含空格时给整个参数加引号。`--guest-arch arm64`、`--gpu virtio`、`--warmup 30` 为便捷选项。ARM 固件示例：
 
-## 自动验证
-
-`--smoke` 仅启动到 MC 主菜单，当前托管模式在主菜单不会启动安卓。`--world-smoke` 自动创建独立超平坦世界，发手机并调用真实物品使用入口，检查画面、投影、收进背包 3 秒后无右键恢复、资源包重载，再截图退出。测试图另外验证一次按下/松开，QEMU 不自动点击 Android 应用。
-
-两种自检参数互斥。默认取得可显示帧后即可结束，因此可能截到安卓开机动画；需要桌面验收可直接指定预热时间：
-
-```bat
-gradlew.bat runClient -PphoneWorldSmoke=true -PphoneRuntimeGpu=virgl -PphoneSmokeWarmupSeconds=85 -PphoneSmokeScreenshot=D:/test-evidence/phone.png
+```sh
+sh test-phone.sh qemu --guest-arch arm64 --set bios=true --set accel=hvf --set firmware=/opt/homebrew/share/qemu/edk2-aarch64-code.fd --world-smoke --warmup 30
+sh test-phone.sh runtime-smoke --set backend=qemu --set bios=true --set guestArch=arm64 --set accel=hvf --set firmware=/opt/homebrew/share/qemu/edk2-aarch64-code.fd
 ```
 
-先创建截图父目录，并使用不存在的截图路径。预热不超过 120 秒；不保证所有机器的安卓均已完成开机。脚本自检日志位于 `.runtime/quicktest/<session>/`，游戏世界在 `run/saves/`；JAR 管理的运行日志在 `run/mcandroidphone/sessions/<UUID>/`。
+`--world-smoke` 创建独立超平坦世界，发手机并走真实物品入口，检查画面、倾斜、旋转、背包恢复及资源重载，截图后退出。诊断图额外验证按下/松开；QEMU 固件测试不证明 Android 触控通过。预热最长 120 秒，可能仍截到开机动画。
 
-## 指定依赖与兼容诊断
+`--android-smoke` 隐含 `--world-smoke`，仅用于 qemu 模式，额外发送经手机投影的鼠标按下、拖动和松开。事件拦截通过不等于来宾已解锁，应再检查 Android 锁屏/前台窗口与截图；已通过的镜像和独立来宾证据见 [ARM64 Android 验收](android-arm64-validation.md)。
 
-```bat
-test-phone.cmd qemu --qemu-exe "D:/qemu/bin/qemu-system-x86_64.exe" --qemu-iso "D:/Android/phone.iso"
-test-phone.cmd qemu --qemu-width 720 --qemu-height 1280 --qemu-density 320
-test-phone.cmd qemu --external-bridge --qemu-display vnc
-test-phone.cmd qemu --external-bridge --qemu-input mouse
-test-phone.cmd qemu --external-bridge --qemu-gpu vga
-```
+截图路径为 `.runtime/evidence/<UUID>/`，世界在 `run/saves/`，原生运行日志在 `run/mcandroidphone/sessions/<UUID>/`。第一次完整构建可能下载 Gradle/Minecraft，quick 无需这些下载。
 
-托管模式支持 D-Bus、virtio/virgl、触屏与默认颜色策略；VNC、鼠标、标准 VGA、自定义颜色使用 `--external-bridge`。外部模式由脚本先启动模拟器和 bridge，并显式将连接配置传给 MC，退出时由脚本清理；它不是普通游戏启动的必经步骤。
+Gradle 也提供 `build runtimeSelfTest` 和 `runtimeSmoke`；后者通过 `-Pruntime.backend=pattern`、`-Pruntime.guestArch=arm64` 等传参。
 
-SDK 测试使用现有 AVD 和 `--sdk`、`--avd` 参数，仍由外部工具管理。其他诊断入口见 [scripts/README](../scripts/README.md)。
+旧 Python 协议/SDK 诊断需显式执行 scripts 内相应 Python 文件，详见 [scripts/README](../scripts/README.md)。它们不参与普通游戏运行或 Java quick 测试。

@@ -37,6 +37,22 @@ public final class Win32Handles {
         } catch (Throwable error) { throw failure(error); }
     }
 
+    static void nonInheritable(long handle) {
+        try {int ok=(int)function("SetHandleInformation",FunctionDescriptor.of(JAVA_INT,ADDRESS,JAVA_INT,JAVA_INT)).invokeExact(MemorySegment.ofAddress(handle),1,0);if(ok==0)throw new IllegalStateException("Cannot clear handle inheritance");}catch(Throwable e){throw failure(e);}
+    }
+    static long duplicateLocal(long source) {
+        try {return duplicate(((MemorySegment)CURRENT.invokeExact()).address(),source);}catch(Throwable e){throw failure(e);}
+    }
+    static MemorySegment map(long handle,long size) {
+        try {
+            MemorySegment result=(MemorySegment)function("MapViewOfFile",FunctionDescriptor.of(ADDRESS,ADDRESS,JAVA_INT,JAVA_INT,JAVA_INT,JAVA_LONG))
+                .invokeExact(MemorySegment.ofAddress(handle),4,0,0,size);
+            if(result.address()==0)throw new IllegalStateException("Cannot map QEMU surface");return result.reinterpret(size);
+        }catch(Throwable e){throw failure(e);}
+    }
+    static void unmap(MemorySegment address) {
+        try {int ignored=(int)function("UnmapViewOfFile",FunctionDescriptor.of(JAVA_INT,ADDRESS)).invokeExact(address);}catch(Throwable e){throw failure(e);}
+    }
     public static void close(long handle) {
         if (handle == 0) return;
         try { int ignored = (int) CLOSE.invokeExact(MemorySegment.ofAddress(handle)); }

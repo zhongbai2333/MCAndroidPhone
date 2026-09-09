@@ -1,0 +1,10 @@
+// SPDX-License-Identifier: Apache-2.0
+android_app {
+    name: "MCPhoneCamera",
+    srcs: ["src/**/*.java"],
+    manifest: "AndroidManifest.xml",
+    sdk_version: "current",
+    min_sdk_version: "29",
+    target_sdk_version: "36",
+    product_specific: true,
+}

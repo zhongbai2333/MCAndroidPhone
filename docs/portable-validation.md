@@ -1,12 +1,16 @@
 # 跨平台验证 · 2026-09-08
 
+> 本文保留 Java 迁移前的历史验证。当前生产运行时已移除 Python，最新结果见 [Java 运行时迁移](java-runtime-migration.md)。历史 Windows/Linux 验收不等于新 Java 后端已在这些宿主验收。
+
+M4 后续已通过 Java 运行时的 Android 16 / ARM64 启动、触控、游戏内滑动解锁及桌面显示，见 [真实 Android 验收](android-arm64-validation.md)。下表保留迁移前的范围。
+
 ## 当前范围
 
 | 宿主 | 已验证 | GPU 状态 |
 | --- | --- | --- |
 | Windows AMD64，本机 RTX 5070 Ti Laptop | 独立 NeoForge Mod、JAR 管理 QEMU、Android 1080×1920、真实触屏；进程正常/取消/失败/强制终止；图案与安卓世界测试、倾斜、旋转、收纳恢复、F3+T | D3D11 → OpenGL，零 CPU 像素复制、一次 GPU 缓存复制通过 |
 | Linux AMD64，Ubuntu 24.04 / WSL2 | Python/Java 核心、几何、进程清理；完整 Mod 构建；QEMU 8.2.2 BIOS/TCG；KVM Android 1080×1920 进入 Home 选择界面；Linux Minecraft 图案世界交互与收纳恢复 | D3D12 OpenGL 可用；DMA-BUF 导出/导入能力探针未通过，保持 CPU 路径 |
-| macOS ARM64，目标 M4 | GitHub ARM64 macOS runner 的 Python/Java 核心、协议、几何、正常退出/取消/失败/JVM 强杀清理通过；IOSurface 探针编译通过；M4 游戏/QEMU 实测待完成 | Mac 实机及 QEMU IOSurface 后端待验证/实现 |
+| macOS ARM64，M4 Mac mini 24 GiB | 本机 Python/Java 核心、几何、进程清理、完整 Mod 构建、图案世界；QEMU 11.1.1 x86 BIOS/TCG 和 ARM64 UEFI/HVF；ARM 固件世界显示、收纳恢复和资源重载通过；真实 Android 待验证 | M4 Metal → IOSurface → OpenGL 同进程探针通过；QEMU IOSurface 跨进程后端尚未实现，游戏仍走 CPU 路径 |
 | macOS Intel | 平台选择与参数单元测试；共享 POSIX/CPU 路径源码 | 未做实机测试 |
 | Windows ARM64 | 原生架构识别、ARM virt 参数及 WHPX/TCG 选择单元测试 | 未做实机测试，不能推断虚拟机 GPU 互操作可用 |
 | Linux ARM64 | ARM virt 参数及 KVM/TCG 选择单元测试 | 未做实机测试，DMA-BUF 生产后端尚未实现 |
@@ -36,6 +40,8 @@ python scripts/dev.py runtime-smoke --set backend=qemu --set bios=true --set gue
 `runtime-smoke` 可指定 `expectedWidth`、`expectedHeight`、`warmupSeconds`；通过后保存一帧诊断 NV12。BIOS 或开机动画不能证明安卓桌面、触控或 GPU 导入完成。世界测试使用新世界，不触碰已有存档。GitHub CI 包含三个宿主的核心/生命周期测试、Linux Mod 构建及 Mac 探针编译；CI 结果不等于六个平台实机验收。
 
 Mac 接续步骤见 [mac-handoff.md](mac-handoff.md)。运行时、Android 镜像、存档和本机证据不上传；GitHub 包含源码和复现步骤。
+
+2026-09-08 的 M4 实测、Python 自动发现修复及证据索引见 [Mac mini 本机验证](mac-mini-validation.md)。下面的 GitHub runner/CI 记录属于此前验证，不能代替本机结果，也没有在本轮重新查询远端 CI。
 
 Mac ARM64 GitHub runner 已编译 IOSurface 探针；该虚拟宿主没有可用的加速 CGL 上下文，因此返回 77，仍需 M4 实机验证。Mac 的僵尸进程组 EPERM 已按组内状态核验处理；协议测试的大于 8 KiB 数据改为并行发送/读取，以兼容 macOS 较小的 socketpair 缓冲区。[最终 CI 核心验证](https://github.com/zhongbai2333/MCAndroidPhone/actions/runs/34201894204)：Windows、Ubuntu、macOS 三个核心作业全部通过。Mac 跳过未安装 FFmpeg 和 Windows 专用检查，真实 QEMU/Android 仍需 M4 测试。
 

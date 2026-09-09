@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- QMP send-key power held for 1500 ms requests Android's normal ShutdownThread.
+     The host must select shutdownMethod=power-key for an image built with this overlay. -->
+<resources>
+    <integer name="config_longPressOnPowerBehavior">3</integer>
+    <integer name="config_longPressOnPowerDurationMs">500</integer>
+    <bool name="config_longPressOnPowerForAssistantSettingAvailable">false</bool>
+</resources>

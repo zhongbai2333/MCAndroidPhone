@@ -1,77 +1,94 @@
 # JAR 管理运行环境
 
-客户端第一次右键手机时创建 `config/mcandroidphone-runtime.properties`，在后台启动内置 Python 管理模块，再启动 QEMU 和 bridge。默认 CPU 路径由 bridge 启动 FFmpeg；GPU 路径使用 ANGLE，不启动 FFmpeg。游戏主线程不会等待安卓开机。
+主手右键手机后，Java `ManagedRuntime` 在后台启动设备，游戏主线程不等待安卓开机。画面、输入、配置、QMP/RFB/D-Bus 协议均在游戏 JVM 内处理。**普通玩家无需安装 Python**；模组复用 Minecraft 使用的 Java 25。
+
+可选 `environment=true` 增加独立 VirtIO 环境通道，发布游戏位置和手机姿态；默认关闭，需配套的定制 Android 服务。现成镜像的开发验收及正式 HAL 尚待验证的范围见 [游戏环境联动](game-environment.md)。
 
 ## 安装与配置
 
-安装 `build/libs/mcandroidphone-0.1.0-prototype.jar` 及匹配的 NeoForge。原生依赖只需在客户端准备一次，不需要开发仓库、Gradle 或 `scripts/` 目录。自动启动已加入 Windows/Linux/macOS 与 AMD64/ARM64 选择。Windows/Linux 需要 Python 3.10+，Mac 需要 Python 3.13+；跨平台实测范围见 [验证记录](portable-validation.md)，Mac 准备见 [交接文档](mac-handoff.md)。
+普通构建 `build/libs/mcandroidphone-0.1.0-prototype.jar` 配合匹配的 NeoForge，需准备 QEMU、FFmpeg、Android 镜像等依赖。平台内置包另外包含对应架构的原生依赖、固件和 Android 媒体；未显式配置 disk/iso/kernel 时，Java 自动校验并解压到 `<游戏目录>/mcandroidphone/bundles/<平台>-<清单SHA256>/`。两种包都不要求开发仓库、Gradle、scripts 或 Python。制作与验收见 [本机功能验收](local-features.md)。
 
-配置是 UTF-8 Java properties，路径使用正斜杠。以本机已准备好的运行时为例：
+游戏手机默认持久保存：新手机把系统模板固定为 `mcandroidphone/devices/.bases/<SHA256>.<格式>` 中的共享底盘，在 `<物品UUID>/` 中创建初始 256 KiB 的 qcow2 系统差分盘；用户盘和 EFI 变量继续各自复制。底盘首次独立复制一次，之后同一模板复用，运行中的写入只进入手机差分盘。差分盘随系统写入增长，用户安装应用及照片仍占用用户盘空间。已有完整磁盘保持原样；升级不会自动替换底盘或迁移数据。一个 UUID 同时只允许一个写入实例。
+
+底盘属于持久设备数据，独立于可重新解压的 `bundles` 缓存。迁移/备份时要带上整个 `devices` 目录，包括隐藏的 `.bases`；不能只拷贝某个 UUID 文件夹或删除正在引用的底盘。详见 [共享系统底盘](shared-system-disk.md)。
+
+`storage=snapshot` 明确选择关闭后丢弃修改。开发 world-smoke 自动使用该模式；没有 deviceId 的独立测试运行时也默认快照。普通玩家无需配置 deviceId，右键流程自动传入物品身份。
+
+首次运行创建 `config/mcandroidphone-runtime.properties`，使用 UTF-8 和正斜杠路径。例如 Mac ARM64：
 
 ```properties
 backend=qemu
-root=D:/UserFile/Documents/GitHub/MCAndroidPhone/.runtime
-python=D:/UserFile/Documents/GitHub/MCAndroidPhone/.venv/Scripts/python.exe
+guestArch=arm64
+accel=hvf
+display=vnc
 gpu=virtio
-ffmpeg=E:/Program Files/ffmpeg/bin/ffmpeg.exe
+qemu=/opt/homebrew/bin/qemu-system-aarch64
+ffmpeg=/opt/homebrew/bin/ffmpeg
+firmware=/opt/homebrew/share/qemu/edk2-aarch64-code.fd
+disk=/absolute/path/android-arm64.qcow2
+diskFormat=qcow2
 width=1080
 height=1920
 density=480
 memory=4096
 cpus=2
-accel=auto
 ```
 
-配置修改在下一次开机时生效；先 `/androidphone poweroff`，待关闭后再右键。未指定 root 时默认 `<游戏目录>/mcandroidphone/runtime`；开发 `runClient` 默认项目 `.runtime`。其余相对文件路径相对于 root。
+该例需要支持 QEMU virt/virtio 的 ARM64 Android 磁盘，不代表任意 ARM 镜像都能启动。已实测的 Android 16 / LineageOS 双磁盘配置见 [专用模板](../configs/mac-lineage-arm64.properties.example) 和 [Mac Android 验收](android-arm64-validation.md)。没有 Android 镜像时，可移除 `disk` 并使用 `bios=true` 验证固件。
 
-| 配置 | 默认发现规则或用途 |
+配置修改在下一次开机生效；先 poweroff，关闭后再右键。root 默认 `<游戏目录>/mcandroidphone/runtime`，开发 runClient 默认项目 `.runtime`；其余相对路径相对于 root。
+
+| 配置 | 用途或发现规则 |
 | --- | --- |
-| `python` | root/python/python.exe、root/python.exe、root 相邻 .venv、PATH（跳过 WindowsApps） |
-| `qemu` | root/qemu/bin/qemu-system-x86_64.exe、root/qemu/qemu-system-x86_64.exe、PATH |
-| `iso` | root/images 下唯一 ISO；多个候选需显式指定 |
-| `kernel`、`initrd` | ISO 同名目录中的 kernel、initrd.img，必须来自同一镜像 |
-| `disk`、`diskFormat` | 已有磁盘，格式默认 qcow2；写入临时快照 |
-| `ffmpeg` | root/ffmpeg/bin/ffmpeg.exe、root/ffmpeg/ffmpeg.exe、PATH |
-| `angle` | GPU 模式默认 root/angle/bin，需 libEGL.dll 和 libGLESv2.dll |
-| `gpu` | virtio 默认 CPU 路径；virgl 为实验 D3D11 共享纹理路径 |
-| `backend` | qemu 默认；pattern 为无需模拟器的测试图 |
+| `qemu` | root/qemu/bin、root/qemu、PATH；Unix 还检查 Homebrew、/usr/local/bin、/usr/bin |
+| `ffmpeg` | root/ffmpeg/bin、root/ffmpeg、PATH 及同样的 Unix 目录 |
+| `iso` | 未指定媒体时查找 root/images 下唯一 ISO |
+| `kernel`、`initrd` | x86 ISO 自动匹配其同名目录中的 kernel、initrd.img |
+| `disk`、`diskFormat` | 独立 raw 或 qcow2 系统模板，新游戏物品默认使用固定底盘和独立差分盘 |
+| `diskLayout` | overlay（默认）或 copy；只决定新手机的系统盘布局，已有手机沿用保存的格式 |
+| `shutdownMethod` | qmp（默认）或 power-key；后者要求镜像配置长按电源直接关机。等待来宾确认，超时记录强制清理；见 [正常关机](guest-shutdown.md) |
+| `dataDisk`、`dataDiskFormat` | 可选第二块 virtio 用户盘，同样按物品持久化。AMD64 双盘选择 Q35 和 virtio-net；新增 AMD64 Go 镜像尚待实机验证 |
+| `storage` | persistent 或 snapshot；无设备 UUID 的测试入口默认 snapshot |
+| `camera` | 默认 false；从手机模型的前/后镜头独立渲染世界，640×480、最高 10 fps，需要来宾接收器。尚未接入普通 Camera2 HAL |
+| `cameraTransport` | 默认 network；为游戏相机 APK 提供每 VM 内部 `10.0.2.100:18765` 到本会话私有端口的转发。virtio 保留给定制原生接收器；两种前端互斥 |
+| `qemuData` | 内置 QEMU 固件/ROM 目录，通过独立 `-L` 参数传入 |
+| `angle` | Windows GPU 模式默认 root/angle/bin，需 libEGL.dll、libGLESv2.dll |
+| `backend` | qemu 默认；pattern 为 Java 生成的诊断图 |
+| `gpu` | virtio 为 CPU 路径；virgl 为 Windows 实验 D3D11 路径 |
+| `guestArch` | amd64 或 arm64，默认宿主架构 |
+| `accel` | auto、tcg、whpx、kvm、hvf；跨架构必须 TCG |
+| `display` | auto：Windows 用 D-Bus，Mac/Linux 用 VNC；也可显式指定 |
+| `input` | auto 检测 virtio-multitouch 支持；touchscreen 或 mouse 可显式指定 |
+| `firmware` | ARM64 UEFI 的只读 pflash；也可使用直接内核引导 |
+| `firmwareVars`、`firmwareVarsFormat` | 可选 EFI 变量模板，持久模式按手机保存，快照模式复制到独立会话；raw（默认）或 qcow2，UTM 的 .fd 也可能是 qcow2 |
+| `adbPort` | 可选本机 ADB 转发端口，默认 0 关闭；启用时只绑定 127.0.0.1，映射来宾 5555，仍需来宾开启并授权 ADB |
+| `kernelAppend` | ARM64 直接内核引导必须填写镜像匹配的参数 |
+| `width`、`height`、`density` | 宽高通过 virtio 显示的 EDID 请求，实际尺寸由来宾决定；density 仅写入自动生成的 Android-x86 内核参数，磁盘引导的 ARM64 系统需在来宾中设置显示密度 |
+| `colorOrder` | rgb 或 bgr；默认匹配 ARM/固件及 Android-x86 的原有策略 |
 
-完整保留 QEMU 的 DLL、固件和模块。只提供 ISO 时需准备同名目录中的 kernel/initrd.img 才能跳过引导菜单自动进入 Android；当前不会下载镜像或提取内核。直接内核启动参数针对 Android-x86 Live 镜像。已有磁盘也使用临时快照，本次修改在关机后丢弃。
+旧配置中的 `python` 已无作用，可以删除。QEMU 的 DLL、固件和模块应完整保留。当前不会自动下载镜像、提取内核或安装原生依赖。ARM64 兼容性已验证到上述特定 LineageOS 镜像，其他镜像仍需分别验收。
 
-启用 GPU：设置 `gpu=virgl`，准备支持 D-Bus/VirGL/OpenGL 的 QEMU 和 ANGLE；本机已具备。详见 [GPU 说明](gpu.md)。
+## 显示与生命周期
 
-## 跨平台选项
+Mac/Linux：QEMU VNC → Java RFB → FFmpeg → Java NV12 direct buffer → OpenGL。Windows CPU：QEMU D-Bus 共享 surface → Java → FFmpeg → 同一 NV12 队列。Windows GPU：D3D11 handle → Java/OpenGL，保留零 CPU 像素复制、一次 GPU 缓存复制。GPU 租约在渲染器释放后才回复 QEMU；重连重新注册监听器以取得静态桌面首帧。Windows 原生迁移尚待 Windows 实机验证，不能沿用旧 Python 后端的验收结论。
 
-- `guestArch=amd64|arm64`：默认宿主原生架构；ARM64 使用 QEMU virt/virtio 设备。
-- `accel=auto|tcg|whpx|kvm|hvf`：根据系统与客体架构验证；跨架构只能用 TCG。
-- `display=auto|vnc|dbus`：Windows 默认 D-Bus；Linux/Mac 默认 VNC。Unix D-Bus FD 传输尚未实现。
-- `gpu=virgl`：目前仅支持 Windows 已验证的共享纹理后端。其他宿主会给出明确错误。
-- `firmware`：ARM64 磁盘/UEFI 启动的只读固件；`kernelAppend`：显式直接内核参数，作为单一参数传给 QEMU。
-- `input=auto|touchscreen|mouse`：自动检查 QEMU 设备支持，旧版会明确回退 mouse。
-- `bios=true`：无系统镜像的启动诊断；ARM64 仍需固件。
+CPU 帧用四个有引用计数的直接缓冲区，只缓存最新帧；尺寸变化和重连更新 epoch，旧帧不会覆盖新会话。每个 FFmpeg 转换器最多一帧在途。输入经过有界工作队列，不在游戏线程等待本地 I/O。
 
-Unix 可从 PATH 查找 `qemu-system-x86_64`/`qemu-system-aarch64`、`ffmpeg`，Python 还会查找 `.venv/bin/python3` 及 Homebrew 路径。非 Windows 的 `gpu=virtio` 使用 VNC → FFmpeg → NV12 CPU 路径，不是 GPU 零拷贝。
+收纳手机保留运行和缓存；F8/disconnect 只断开视图，安卓继续运行；poweroff、退出世界或游戏关闭整个自有会话。
 
-## 生命周期
+每个 QEMU/FFmpeg 由复用 `java.home` 的轻量 Java 守护进程持有。守护进程注册后才释放启动门；POSIX 独立进程组和 Windows Job 包含对应子孙进程。守护进程单独观察实际父 JVM，即使视频管道阻塞或游戏被强杀也能清理。正常关机先关闭显示、校验自有 QEMU UUID 并发送 QMP quit；强制回收时先终止守护进程，再关闭视频管道，避免管道写入阻塞关闭线程。不会按程序名称关闭其他进程。
 
-右键开机 → 后台准备独立会话 → 启动 QEMU → 启动 bridge → MC 接收画面。桥接就绪不代表安卓已进入桌面；启动期间可看见开机动画。
-
-收纳手机或退出触控保留连接和安卓。F8、disconnect、物品离开库存只断开画面；`poweroff`、退出世界、退出游戏关闭本 Mod 启动的整个会话。`/androidphone runtime` 和 `/androidphone status` 可查看状态；失败后显示原因，下次右键可重试。
-
-每次开机使用 `<游戏目录>/mcandroidphone/sessions/<UUID>/`，内含 runtime.log、qemu.log、bridge.log、session.json 和实际启动配置。管理器从 JAR 的 bridge.zip 加载代码，不依赖仓库内脚本。Windows Job 跟踪启动门之后创建的所有子进程；JVM 的 stdin 管道关闭后触发清理，JVM 被强制结束也适用。POSIX 为每个子进程建立独立进程组与生命周期管道；先保留组长 PID、再清理组内子孙进程，避免误杀复用 PID。正常关机先校验自身 QEMU UUID 再发送 QMP quit，随后关闭 Job。临时帧映射和发现配置在清理时删除，诊断日志保留。
-
-启动有超时，单个日志超过 64 MiB 时结束本会话。未实现日志历史自动轮转；需要时可在关机后清理旧 sessions。不会关闭外部已运行的模拟器或任意同名进程。
+日志位于 `<游戏目录>/mcandroidphone/sessions/<UUID>/`：`runtime.properties`、`session.json`、`qemu-command.json`、`*.process.json`、原生程序 `*.log`。记录保留 guardian/child PID、QEMU UUID 和退出状态。启动与转换有超时，单个日志上限 64 MiB；历史会话尚未自动轮转。
 
 ## 开发与兼容入口
 
-```bat
-gradlew.bat runClient
-gradlew.bat runClient -PphoneRuntimeGpu=virgl
-gradlew.bat runClient -PphoneRuntimeBackend=pattern
+```sh
+sh test-phone.sh quick
+sh test-phone.sh pattern --world-smoke
+sh test-phone.sh qemu --set guestArch=arm64 --set bios=true --set firmware=/path/to/edk2-aarch64-code.fd
+sh gradlew build runtimeSelfTest
 ```
 
-其他覆盖项为 `-PphoneRuntimePython=...`、`-PphoneRuntimeIso=...` 等，配置优先级为 JVM/Gradle 覆盖 > properties > 默认值。普通启动器不需要这些 Gradle 参数，编辑配置文件即可。
+Windows 使用 test-phone.cmd / gradlew.bat；入口同样只需 Java。覆盖优先级：JVM/Gradle > properties > 默认值，例如 `-PphoneRuntimeIso=...`。完整测试入口见 [quick-test](quick-test.md)。
 
-显式传入 JVM 参数 `-Dmcandroidphone.config=绝对路径/bridge.properties` 时使用外部桥接，不启动或接管该外部运行环境。开发对应 `-PbridgeConfig=...`。SDK Emulator 诊断由外部工具管理；VNC 和 BIOS 已支持内部管理，见 [测试说明](quick-test.md)。
-
-JAR 已内置桥接和启动逻辑；原生 QEMU、Python 解释器、FFmpeg/ANGLE 和 Android 镜像仍外置。后续可加入按平台校验、解压原生运行时的逻辑，当前尚未实现。
+显式 `-Dmcandroidphone.config=/path/to/bridge.properties`（开发 `-PbridgeConfig=...`）仍可连接外部旧桥接，此时不启动或接管外部进程。Python 目录仅保留作旧协议回归和 SDK Emulator 等外部诊断，不参与发行 JAR，也不是普通启动流程的一部分。

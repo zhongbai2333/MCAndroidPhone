@@ -49,8 +49,13 @@ final class AndroidPhoneWorldSmoke {
     private static long usedNanos;
     private static long inputSettledNanos;
     private static boolean patternInputPosted;
+    private static boolean androidInputPosted;
+    private static int androidSwipeStep;
+    private static long androidSwipeUntil;
+    private static double androidSwipeX, androidSwipeY;
     private static int poseStep;
     private static long poseUntil;
+    private static boolean environmentPoseChecked;
     private static CompletableFuture<Path> tiltedScreenshot;
     private static long nextStatusNanos;
     private static String worldId;
@@ -59,6 +64,7 @@ final class AndroidPhoneWorldSmoke {
     private static CompletableFuture<Path> screenshot;
     private static CameraType originalCamera;
     private static boolean originalHideGui;
+    private static boolean originalPauseOnLostFocus;
 
     private AndroidPhoneWorldSmoke() {}
 
@@ -132,9 +138,11 @@ final class AndroidPhoneWorldSmoke {
             if (!worldId.equals(server.getWorldData().getLevelName()))
                 throw new IllegalStateException("Loaded world is not this smoke's new world");
             loadedNanos = now;
-            deadlineNanos = now + TimeUnit.SECONDS.toNanos(180);
+            deadlineNanos = now + TimeUnit.SECONDS.toNanos(Math.max(180,Math.min(600,Long.getLong("mcandroidphone.smokeWarmupSeconds",0L))+90));
             originalCamera = mc.options.getCameraType();
             originalHideGui = mc.options.hideGui;
+            originalPauseOnLostFocus = mc.options.pauseOnLostFocus;
+            mc.options.pauseOnLostFocus = false;
             mc.options.setCameraType(CameraType.FIRST_PERSON);
             mc.options.hideGui = false;
             mc.player.getInventory().setSelectedSlot(0);
@@ -175,7 +183,7 @@ final class AndroidPhoneWorldSmoke {
         }
 
         if (stage == Stage.FRAMES) {
-            if (now - usedNanos < TimeUnit.SECONDS.toNanos(Math.max(2, Math.min(120, Long.getLong("mcandroidphone.smokeWarmupSeconds",0L))))
+            if (now - usedNanos < TimeUnit.SECONDS.toNanos(Math.max(2, Math.min(600, Long.getLong("mcandroidphone.smokeWarmupSeconds",0L))))
                     || !AndroidPhoneAdapter.bridgeConnected()
                     // Android may stream only one frame for a static desktop; the pattern must keep updating.
                     || AndroidPhoneAdapter.uploadedFrames() - uploadedBeforeUse < (Boolean.getBoolean("mcandroidphone.patternSmoke") ? 4 : 1)
@@ -190,6 +198,20 @@ final class AndroidPhoneWorldSmoke {
                 return;
             }
             if (patternInputPosted && now < inputSettledNanos) return;
+            if (Boolean.getBoolean("mcandroidphone.environmentSmoke") && !environmentPoseChecked) {
+                if(!checkPatternPose(mc,now))return;
+                environmentPoseChecked=true;inputSettledNanos=now+TimeUnit.SECONDS.toNanos(5);
+                LOGGER.info("ANDROIDPHONE_ENVIRONMENT_POSE_OK: real game pose sampled; verify guest sensor callbacks separately");
+                return;
+            }
+            if(environmentPoseChecked&&now<inputSettledNanos)return;
+            if (Boolean.getBoolean("mcandroidphone.androidSmoke") && !androidInputPosted) {
+                if (!postAndroidSwipe(mc, now)) return;
+                androidInputPosted = true;
+                inputSettledNanos = now + TimeUnit.SECONDS.toNanos(3);
+                return;
+            }
+            if (androidInputPosted && now < inputSettledNanos) return;
             if(System.getProperty("mcandroidphone.config","").isBlank() && !AndroidPhoneAdapter.managedRuntimeActive())
                 throw new IllegalStateException("World smoke expected the JAR-owned runtime");
             if (focusScreenshot==null) {
@@ -245,7 +267,7 @@ final class AndroidPhoneWorldSmoke {
                     || AndroidPhoneAdapter.renderedFrames()-resumeDraws<10) return;
             if (reequippedAt==0) reequippedAt=now;
             if (now-reequippedAt<TimeUnit.SECONDS.toNanos(1))return;
-            if (mc.screen!=null) throw new IllegalStateException("Reequip must render without right-click/focus");
+            if (mc.screen!=null) throw new IllegalStateException("Reequip must render without right-click/focus; screen="+mc.screen.getClass().getName());
             LOGGER.info("ANDROIDPHONE_STOW_RESUME_OK: sameConnection=true sameEpoch=true inventorySlot=9 noRightClick=true drawn={}",
                 AndroidPhoneAdapter.renderedFrames()-resumeDraws);
             reload=mc.reloadResourcePacks();stage=Stage.RELOADING;
@@ -317,6 +339,40 @@ final class AndroidPhoneWorldSmoke {
         LOGGER.info("ANDROIDPHONE_WORLD_SMOKE_PATTERN_INPUT: pressCanceled=true releaseCanceled=true x={} y={}", x, y);
     }
 
+    /** Opt-in Android acceptance: drag through the same projected-screen mouse event path as a player. */
+    private static boolean postAndroidSwipe(Minecraft mc, long now) {
+        if (now < androidSwipeUntil) return false;
+        var point = PhoneProjection.projectLocal(.5, .85 - .6 * androidSwipeStep / 12.0);
+        if (point == null) throw new IllegalStateException("No projected Android touch point");
+        var mouse = new MouseButtonEvent(point.u(), point.v(), new MouseButtonInfo(GLFW.GLFW_MOUSE_BUTTON_LEFT, 0));
+        try {
+            if (androidSwipeStep == 0) {
+                var pressed = new ScreenEvent.MouseButtonPressed.Pre(mc.screen, mouse, false);
+                NeoForge.EVENT_BUS.post(pressed);
+                if (!pressed.isCanceled()) throw new IllegalStateException("Android swipe press was not intercepted");
+            } else {
+                var dragged = new ScreenEvent.MouseDragged.Pre(mc.screen, mouse,
+                        point.u() - androidSwipeX, point.v() - androidSwipeY);
+                NeoForge.EVENT_BUS.post(dragged);
+                if (!dragged.isCanceled()) throw new IllegalStateException("Android swipe drag was not intercepted");
+            }
+            androidSwipeX = point.u(); androidSwipeY = point.v();
+            if (androidSwipeStep++ == 12) {
+                var released = new ScreenEvent.MouseButtonReleased.Pre(mc.screen, mouse);
+                NeoForge.EVENT_BUS.post(released);
+                if (!released.isCanceled()) throw new IllegalStateException("Android swipe release was not intercepted");
+                // Guest receipt is checked independently with its keyguard/window state and screenshot.
+                LOGGER.info("ANDROIDPHONE_WORLD_SMOKE_ANDROID_SWIPE: projectedMouseEvents=true steps=12 released=true");
+                return true;
+            }
+            androidSwipeUntil = now + TimeUnit.MILLISECONDS.toNanos(50);
+            return false;
+        } catch (RuntimeException failure) {
+            NeoForge.EVENT_BUS.post(new ScreenEvent.MouseButtonReleased.Pre(mc.screen, mouse));
+            throw failure;
+        }
+    }
+
     /** Real rendered pose plus NeoForge input events, only in the opt-in pattern world. */
     private static boolean checkPatternPose(Minecraft mc,long now) {
         if(poseStep==0) {
@@ -361,7 +417,7 @@ final class AndroidPhoneWorldSmoke {
     }
 
     static boolean extractTestHover() {
-        if(!Boolean.getBoolean("mcandroidphone.worldSmoke") || !Boolean.getBoolean("mcandroidphone.patternSmoke")
+        if(!Boolean.getBoolean("mcandroidphone.worldSmoke") || !(Boolean.getBoolean("mcandroidphone.patternSmoke")||Boolean.getBoolean("mcandroidphone.environmentSmoke"))
                 || stage!=Stage.FRAMES || poseStep!=1)return false;
         var p=PhoneProjection.projectLocal(.8,.2);
         if(p!=null)AndroidPhoneAdapter.hover(p.u(),p.v());
@@ -372,6 +428,7 @@ final class AndroidPhoneWorldSmoke {
         if (originalCamera != null) {
             mc.options.setCameraType(originalCamera);
             mc.options.hideGui = originalHideGui;
+            mc.options.pauseOnLostFocus = originalPauseOnLostFocus;
             originalCamera = null;
         }
     }

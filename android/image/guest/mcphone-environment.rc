@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: Apache-2.0
+on post-fs-data
+    mkdir /data/vendor/mcandroidphone 0755 root root
+    restorecon_recursive /data/vendor/mcandroidphone
+    start mcphone-environment
+
+service mcphone-environment /vendor/bin/mcphone-environmentd
+    class late_start
+    user root
+    group root
+    disabled
+    restart_period 2

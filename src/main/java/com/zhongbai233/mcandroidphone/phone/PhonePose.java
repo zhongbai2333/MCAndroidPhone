@@ -1,6 +1,6 @@
 package com.zhongbai233.mcandroidphone.phone;
 
-/** Device presentation only; never changes Android sensor/display orientation. */
+/** Presentation pose; the optional environment sampler publishes its rotation to Android. */
 public final class PhonePose {
     public static final double PIVOT_U=.58, PIVOT_V=.88;
     private double hoverX,hoverY,targetX,targetY,focus,rotation,targetRotation;

@@ -1,0 +1,31 @@
+[
+  {
+    "file": "common_mobile.mk",
+    "url": "https://raw.githubusercontent.com/LineageOS/android_vendor_lineage/lineage-23.2/config/common_mobile.mk",
+    "sha256": "0f730a5900f7d6794466c2af75483da973a503a98cd18df6ed3d363cb75a16b4",
+    "bytes": 1909
+  },
+  {
+    "file": "common.mk",
+    "url": "https://raw.githubusercontent.com/LineageOS/android_vendor_lineage/lineage-23.2/config/common.mk",
+    "sha256": "7e9a36db0c54c845dff9e2fe02addc77c17afb318958c508738970cbc82ef6bb",
+    "bytes": 8315
+  },
+  {
+    "file": "amd64-go.mk",
+    "url": "https://raw.githubusercontent.com/LineageOS/android_device_virt_virtio_x86_64/lineage-23.2/lineage_virtio_x86_64_go.mk",
+    "sha256": "4c9ba79264c725e1637c09493fa04b40cf4c5889c58f66f94a9ccf82e663a316",
+    "bytes": 888
+  },
+  {
+    "file": "handheld_system.mk",
+    "url": "https://raw.githubusercontent.com/LineageOS/android_build/lineage-23.2/target/product/handheld_system.mk",
+    "sha256": "45d4e0ad2b260e04d68bd083f2f5695cd6b874c8d091a6df8c3df53804907bb5",
+    "bytes": 4087
+  },
+  {
+    "file": "arm64-go.mk",
+    "url": "https://raw.githubusercontent.com/LineageOS/android_device_virt_virtio_arm64only/lineage-23.2/lineage_virtio_arm64only_go.mk",
+    "sha256": "ad0ca57756136619ff0c1be095105ad41a1b3400a3345588a6a219f2105bb20a"
+  }
+]

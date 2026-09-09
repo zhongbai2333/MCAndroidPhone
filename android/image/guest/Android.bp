@@ -1,0 +1,16 @@
+// SPDX-License-Identifier: Apache-2.0
+cc_binary {
+    name: "mcphone-environmentd",
+    vendor: true,
+    srcs: ["environmentd.cpp"],
+    cpp_std: "c++17",
+    cflags: ["-Wall", "-Wextra", "-Werror"],
+    init_rc: ["mcphone-environment.rc"],
+}
+
+cc_library_headers {
+    name: "mcphone-environment-headers",
+    vendor_available: true,
+    export_include_dirs: ["."],
+    apex_available: ["//apex_available:anyapex"],
+}

@@ -4,22 +4,22 @@ import java.time.Duration;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-/** Real managed native runtime -> TCP/mmap -> Java, without a Minecraft installation. */
+/** Real Java-managed native runtime -> in-process NV12, without a Minecraft installation. */
 public final class RuntimeSmoke {
     public static void main(String[] args) throws Exception {
         var options=new HashMap<String,String>();
-        options.put("python",args[0]);options.put("root",args[1]);
-        for(int i=2;i<args.length;i++){int split=args[i].indexOf('=');if(split<1)throw new IllegalArgumentException(args[i]);
+        options.put("root",args[0]);
+        for(int i=1;i<args.length;i++){int split=args[i].indexOf('=');if(split<1)throw new IllegalArgumentException(args[i]);
             options.put(args[i].substring(0,split),args[i].substring(split+1));}
         int expectedWidth=Integer.parseInt(options.getOrDefault("expectedWidth","0"));options.remove("expectedWidth");
         int expectedHeight=Integer.parseInt(options.getOrDefault("expectedHeight","0"));options.remove("expectedHeight");
         int warmup=Integer.parseInt(options.getOrDefault("warmupSeconds","0"));options.remove("warmupSeconds");
         Path game=Files.createTempDirectory("phone-native-smoke-");
-        var runtime=new ManagedRuntime(game,options,()->RuntimeSmoke.class.getResourceAsStream("/mcandroidphone/runtime/bridge.zip"));
+        var runtime=new ManagedRuntime(game,options,()->RuntimeSmoke.class.getResourceAsStream("/mcandroidphone/runtime/native-guard.jar"));
         System.out.println("Runtime smoke evidence: "+game);
         try {
-            Path config=runtime.start().get(115,TimeUnit.SECONDS);
-            try(var client=new BridgeClient(config)) {
+            runtime.start().get(115,TimeUnit.SECONDS);
+            try(var client=runtime.connect()) {
                 client.start();long start=System.nanoTime(),end=start+TimeUnit.SECONDS.toNanos(150);int frames=0;
                 while(System.nanoTime()<end) {
                     if(runtime.state()==ManagedRuntime.State.FAILED)throw new IllegalStateException(runtime.status());
@@ -37,6 +37,6 @@ public final class RuntimeSmoke {
                 }
                 throw new IllegalStateException("No complete native frames: "+client.status());
             }
-        } finally {runtime.close();runtime.awaitStopped(Duration.ofSeconds(10));}
+        } finally {runtime.close();runtime.awaitStopped(Duration.ofSeconds(20));if(runtime.state()!=ManagedRuntime.State.STOPPED)throw new IllegalStateException("Runtime did not stop cleanly: "+runtime.status());}
     }
 }

@@ -20,3 +20,8 @@ local.properties
 .vscode/
 .github/modernize/
 .DS_Store
+
+# Source attribution is committed; generated/private runtime binaries stay out of source.
+!src/main/resources/mcandroidphone/runtime/
+src/main/resources/mcandroidphone/runtime/*
+!src/main/resources/mcandroidphone/runtime/XZ-NOTICE.txt

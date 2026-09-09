@@ -1,0 +1,14 @@
+type mcphone_environment, domain;
+type mcphone_environment_exec, exec_type, vendor_file_type, file_type;
+init_daemon_domain(mcphone_environment)
+type mcphone_environment_data_file, file_type, data_file_type;
+type mcphone_environment_device, dev_type;
+allow mcphone_environment mcphone_environment_device:chr_file { open read write getattr ioctl };
+r_dir_file(mcphone_environment, sysfs)
+allow mcphone_environment vendor_data_file:dir search;
+allow mcphone_environment mcphone_environment_data_file:dir create_dir_perms;
+allow mcphone_environment mcphone_environment_data_file:file create_file_perms;
+allow hal_sensors_default vendor_data_file:dir search;
+r_dir_file(hal_sensors_default, mcphone_environment_data_file)
+allow hal_gnss_default vendor_data_file:dir search;
+r_dir_file(hal_gnss_default, mcphone_environment_data_file)

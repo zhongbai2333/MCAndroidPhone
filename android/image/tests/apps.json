@@ -1,0 +1,21 @@
+{
+  "purpose": "Developer-only APK compatibility samples; not bundled in the distributed runtime",
+  "apps": [
+    {
+      "package": "org.fossify.math",
+      "version": "1.4.0",
+      "release": "https://github.com/FossifyOrg/Calculator/releases/tag/1.4.0",
+      "url": "https://github.com/FossifyOrg/Calculator/releases/download/1.4.0/calculator-10-foss-release.apk",
+      "bytes": 7047681,
+      "sha256": "7c5443c22d6d62c67dfe80df33ea9161ff0fa440f92590bcb45d7008b57613ed"
+    },
+    {
+      "package": "org.andstatus.game2048",
+      "version": "1.16.2-release",
+      "release": "https://github.com/andstatus/game2048/releases/tag/1.16.2-release",
+      "url": "https://github.com/andstatus/game2048/releases/download/1.16.2-release/game2048-android-1.16.2-release.apk",
+      "bytes": 1354547,
+      "sha256": "12191f38ae70c1113bb4bec66a1fa4b2cf0d6f15b39371a7446ce2f6f181c4e6"
+    }
+  ]
+}

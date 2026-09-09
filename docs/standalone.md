@@ -28,4 +28,4 @@ test-phone.cmd qemu --qemu-gpu virgl
 
 手机独立维护物品身份、库存追踪、薄边框模型、手持渲染、70 度第一人称投影和逆透视触点。NV12 两平面与 GPU RGBA 路径使用自己的纹理与 shader。动态画面缓存跨收纳和资源包重载存活，断线后按连接 epoch 清理。
 
-仍只支持一个本机安卓实例、主手聚焦和单指触屏。音频、多指、多人共享与 Iris shaderpack 兼容尚未完成。bridge 与启动管理已经内置 JAR；QEMU、Python 解释器、FFmpeg/ANGLE 和 Android 镜像继续外置。配置见 [运行环境](runtime.md)。GPU 模式仍有一次 GPU 缓存复制，参见 [GPU 边界](gpu.md)。
+仍只支持一个本机安卓实例、主手聚焦和单指触屏。音频、多指、多人共享与 Iris shaderpack 兼容尚未完成。后端与启动管理已迁入 Java，玩家无需 Python；普通 JAR 使用外部依赖，平台内置 JAR 可自动解压启动，手机磁盘默认按物品持久保存。配置见 [运行环境](runtime.md)，包与摄像头通道的证据见 [本机功能验收](local-features.md)。GPU 模式仍有一次 GPU 缓存复制，参见 [GPU 边界](gpu.md)。

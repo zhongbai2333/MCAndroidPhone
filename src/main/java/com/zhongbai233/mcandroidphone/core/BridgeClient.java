@@ -22,7 +22,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 /** Local authenticated control plus leased shared-memory frames; never blocks the render thread. */
-public final class BridgeClient implements AutoCloseable {
+public final class BridgeClient implements PhoneConnection {
     private final Path config;
     private final LatestFrame latest = new LatestFrame();
     private final java.util.concurrent.atomic.AtomicReference<GpuFrame> latestGpu = new java.util.concurrent.atomic.AtomicReference<>();

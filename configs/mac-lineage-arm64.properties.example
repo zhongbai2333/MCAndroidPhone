@@ -1,0 +1,31 @@
+# Tested image: jqssun/android-lineage-qemu v2026.08.22, ARM64-only UTM archive.
+# Replace the three image paths. Do not point these at Android SDK emulator images.
+backend=qemu
+guestArch=arm64
+accel=hvf
+display=vnc
+gpu=virtio
+input=auto
+qemu=/opt/homebrew/bin/qemu-system-aarch64
+ffmpeg=/opt/homebrew/bin/ffmpeg
+firmware=/opt/homebrew/share/qemu/edk2-aarch64-code.fd
+firmwareVars=/absolute/path/LineageOS.utm/Data/efi_vars.fd
+firmwareVarsFormat=qcow2
+disk=/absolute/path/LineageOS.utm/Data/vda.qcow2
+diskFormat=qcow2
+dataDisk=/absolute/path/LineageOS.utm/Data/vdb.qcow2
+dataDiskFormat=qcow2
+# This image/QEMU software scanout swaps red/blue versus Android's screencap.
+colorOrder=bgr
+width=720
+height=1280
+memory=4096
+cpus=4
+# Set Android's own display density to 320 for phone-sized UI.
+# Disk boot does not consume the runtime density setting.
+# Optional, loopback only; guest debugging and RSA authorization are still required.
+# adbPort=15555
+# Optional world/sensor channel; requires the custom image's environment service.
+# Stock images require the explicitly launched development probe instead.
+# environment=true
+# Disks always use temporary snapshots. Shutdown discards subsequent guest changes.

@@ -20,9 +20,10 @@ def compile_core():
         sources.extend(p for p in (ROOT/f'src/{kind}/java/com/zhongbai233/mcandroidphone/phone').glob('*.java')
                        if p.name in ('PhoneGeometry.java','PhonePose.java','PhoneGeometrySelfTest.java'))
     subprocess.run([java_tool('javac'),'-encoding','UTF-8','-d',str(classes),*map(str,sources)],check=True)
-    archive=classes/'mcandroidphone/runtime/bridge.zip';archive.parent.mkdir(parents=True,exist_ok=True)
+    archive=classes/'mcandroidphone/runtime/native-guard.jar';archive.parent.mkdir(parents=True,exist_ok=True)
     with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED) as z:
-        for p in (ROOT/'bridge/mcandroid_bridge').rglob('*.py'):z.write(p,p.relative_to(ROOT/'bridge'))
+        for name in ('NativeGuard*.class','Json*.class'):
+            for p in (classes/'com/zhongbai233/mcandroidphone/core').glob(name):z.write(p,p.relative_to(classes))
         z.write(ROOT/'LICENSE','licenses/LICENSE')
     return classes
 
@@ -73,17 +74,17 @@ def main():
                 subprocess.run([sys.executable,'-u','-c',runner,'discover','-s',directory,'-v'],cwd=ROOT,env=env,check=True)
             subprocess.run([*command,'com.zhongbai233.mcandroidphone.core.CoreSelfTest'],check=True)
             subprocess.run([*command,'com.zhongbai233.mcandroidphone.phone.PhoneGeometrySelfTest'],check=True)
-            subprocess.run([*command,'com.zhongbai233.mcandroidphone.core.ManagedRuntimeSelfTest',sys.executable,str(ROOT/'.runtime')],check=True)
+            subprocess.run([*command,'com.zhongbai233.mcandroidphone.core.ManagedRuntimeSelfTest',str(ROOT/'.runtime')],check=True)
         else:
-            subprocess.run([*command,'com.zhongbai233.mcandroidphone.core.RuntimeSmoke',sys.executable,str(ROOT/'.runtime'),*args.set],check=True)
+            subprocess.run([*command,'com.zhongbai233.mcandroidphone.core.RuntimeSmoke',str(ROOT/'.runtime'),*args.set],check=True)
         return
-    properties={'python':sys.executable,'gpu':args.gpu}
+    properties={'gpu':args.gpu}
     if args.mode!='build':properties['backend']='pattern' if args.mode=='pattern' else 'qemu'
     if args.mode=='bios':properties.update(bios='true',guestArch='amd64',input='mouse')
     if args.guest_arch:properties['guestArch']=args.guest_arch
     for entry in args.set:
         key,sep,value=entry.partition('=')
-        if not sep or key not in ('root','backend','gpu','python','qemu','iso','disk','diskFormat','kernel','initrd',
+        if not sep or key not in ('root','backend','gpu','qemu','iso','disk','diskFormat','kernel','initrd',
             'ffmpeg','angle','width','height','density','memory','cpus','accel','guestArch','display','firmware','kernelAppend','input','colorOrder','bios'):
             raise ValueError(f'Unknown runtime override: {key}')
         properties[key]=value

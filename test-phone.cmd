@@ -1,9 +1,9 @@
 @echo off
 setlocal
-where pwsh.exe >nul 2>nul
-if errorlevel 1 (
-    powershell.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\quick-test.ps1" %*
+cd /d "%~dp0"
+if defined JAVA_HOME (
+  "%JAVA_HOME%\bin\java.exe" scripts\Dev.java %*
 ) else (
-    pwsh.exe -NoProfile -ExecutionPolicy Bypass -File "%~dp0scripts\quick-test.ps1" %*
+  java scripts\Dev.java %*
 )
-exit /b %ERRORLEVEL%
+exit /b %errorlevel%

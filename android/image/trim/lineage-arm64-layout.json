@@ -1,0 +1,50 @@
+{
+  "rawBytes": 5368709120,
+  "superOffset": 269484032,
+  "superBytes": 4294967296,
+  "partitions": {
+    "system_dlkm": [
+      {
+        "offset": 1048576,
+        "bytes": 307200
+      }
+    ],
+    "vendor_dlkm": [
+      {
+        "offset": 2097152,
+        "bytes": 15831040
+      }
+    ],
+    "product": [
+      {
+        "offset": 18874368,
+        "bytes": 1548406784
+      }
+    ],
+    "system": [
+      {
+        "offset": 1567621120,
+        "bytes": 1080315904
+      }
+    ],
+    "system_ext": [
+      {
+        "offset": 2648702976,
+        "bytes": 563564544
+      }
+    ],
+    "odm": [
+      {
+        "offset": 3212836864,
+        "bytes": 135102464
+      }
+    ],
+    "vendor": [
+      {
+        "offset": 3348103168,
+        "bytes": 387219456
+      }
+    ]
+  },
+  "rawSha256": "0d1c697e29c179fefaafd2646483968a2582fdd0c01373e955fbb9727462b275"
+}

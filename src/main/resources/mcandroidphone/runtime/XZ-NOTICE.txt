@@ -1,0 +1,6 @@
+XZ for Java 1.12 (org.tukaani:xz), BSD Zero Clause License (0BSD).
+Project and source: https://tukaani.org/xz/java.html
+License: https://github.com/tukaani-project/xz-java/blob/v1.12/LICENSES/0BSD.txt
+Embedded unmodified Maven Central JAR SHA-256:
+3e158a87bd73d8afb4b6e8239c013b7d049c48563f45860ce99cd2e448cf4a6b
+The codec is loaded privately to avoid exposing its packages to other Minecraft mods.

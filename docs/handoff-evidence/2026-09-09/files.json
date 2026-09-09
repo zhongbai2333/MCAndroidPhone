@@ -1,0 +1,20 @@
+{
+  "source": "Mac ARM64 stock Android baseline, not Go",
+  "files": [
+    {
+      "file": "calculator-result.png",
+      "bytes": 64916,
+      "sha256": "6dfd793ac5c37d9e51e5327e2579e6c8023d93c409fe1717c3177b8453f2732a"
+    },
+    {
+      "file": "game-after.png",
+      "bytes": 59642,
+      "sha256": "c8c56e7c3de22fe5ac8ee4d3d942d08b419878c5842fee35d9ea132655975fc6"
+    },
+    {
+      "file": "game-resumed.png",
+      "bytes": 64137,
+      "sha256": "4ee45c8aea32a764944ea8cd899ebd437025e2b7004c93e17600848071df5582"
+    }
+  ]
+}

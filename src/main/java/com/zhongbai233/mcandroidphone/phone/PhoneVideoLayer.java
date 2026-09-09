@@ -2,7 +2,7 @@ package com.zhongbai233.mcandroidphone.phone;
 
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.zhongbai233.mcandroidphone.core.BridgeClient;
+import com.zhongbai233.mcandroidphone.core.PhoneConnection;
 import com.zhongbai233.mcandroidphone.core.Frame;
 import com.zhongbai233.mcandroidphone.core.GpuFrame;
 import net.minecraft.client.Minecraft;
@@ -18,7 +18,7 @@ final class PhoneVideoLayer implements AutoCloseable {
     private long sequence = -1;
     private int width = 1080, height = 1920;
     private long uploadedFrames, renderedFrames;
-    private BridgeClient sourceClient;
+    private PhoneConnection sourceClient;
     private long sourceEpoch = -1;
     private boolean sourceConnected;
     private PhoneGeometry.Fit fit = PhoneGeometry.phoneFit(PhoneGeometry.PHONE_SURFACE_ASPECT, width, height);
@@ -27,7 +27,7 @@ final class PhoneVideoLayer implements AutoCloseable {
     long uploadedFrames() { return uploadedFrames; }
     long renderedFrames() { return renderedFrames; }
 
-    void update(BridgeClient client) {
+    void update(PhoneConnection client) {
         boolean connected = client != null && client.connected();
         try (Frame frame = !connected ? null : client.pollFrame();
              GpuFrame gpuFrame = !connected || !client.gpuTransport() ? null : client.pollGpuFrame()) {
@@ -76,7 +76,7 @@ final class PhoneVideoLayer implements AutoCloseable {
         }
     }
 
-    void submit(BridgeClient client,PoseStack poses,SubmitNodeCollector collector,
+    void submit(PhoneConnection client,PoseStack poses,SubmitNodeCollector collector,
                 float x0,float y0,float x1,float y1,float z0,float z1,float z2,float z3) {
         update(client);
         if (texture==null) return;

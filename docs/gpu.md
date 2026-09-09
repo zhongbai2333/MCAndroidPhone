@@ -1,5 +1,7 @@
 # Windows GPU 共享画面（实验）
 
+> Java 迁移已将 D-Bus 与 D3D11 租约处理移入 JVM，保留原渲染导入模块。下面的实测记录属于旧后端；Java Windows 原生路径仍需 Windows 实机验收，见 [迁移记录](java-runtime-migration.md)。
+
 已实现 **Android VirGL → ANGLE/D3D11 → QEMU D-Bus 共享纹理 → Java/OpenGL → MC 手机**。生产画面路径不读回 GPU 像素、不调用 FFmpeg、不转换 NV12、不创建像素 mmap。Python、TCP 和 Java core 只处理句柄、尺寸、更新通知与输入。
 
 这实现了 **零 CPU 像素拷贝的 GPU 传输**，尚不是整个显示路径的严格零拷贝：MC 为延后绘制和静止画面保留 **一次 GPU 内部缓存复制**。不要将它称为“完全零拷贝”或将约 1 ms 的导入测试耗时当成触摸到屏幕的端到端延迟。

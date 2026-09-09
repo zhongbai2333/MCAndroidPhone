@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.logging.LogUtils;
 import com.zhongbai233.mcandroidphone.core.BridgeClient;
+import com.zhongbai233.mcandroidphone.core.PhoneConnection;
 import com.zhongbai233.mcandroidphone.core.ManagedRuntime;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -43,11 +44,13 @@ public final class AndroidPhoneAdapter {
         InputConstants.Type.KEYSYM, GLFW.GLFW_KEY_F8, CATEGORY);
     private static final PhoneVideoLayer VIDEO = new PhoneVideoLayer();
     static final PhonePose POSE = new PhonePose();
-    private static BridgeClient client;
+    private static PhoneConnection client;
     private static UUID device;
     private static ManagedRuntime runtime;
-    private static java.util.concurrent.CompletableFuture<Path> boot;
+    private static java.util.concurrent.CompletableFuture<ManagedRuntime> boot;
     private static boolean runtimeFailureReported;
+    private static final com.zhongbai233.mcandroidphone.environment.EnvironmentSampler ENVIRONMENT =
+        new com.zhongbai233.mcandroidphone.environment.EnvironmentSampler();
 
     private static int pendingTicks;
     private static boolean openFocus;
@@ -71,6 +74,7 @@ public final class AndroidPhoneAdapter {
         NeoForge.EVENT_BUS.addListener(AndroidPhoneAdapter::screenRender);
         NeoForge.EVENT_BUS.addListener(AndroidPhoneAdapter::logout);
         NeoForge.EVENT_BUS.addListener(AndroidPhoneAdapter::shutdown);
+        NeoForge.EVENT_BUS.addListener(AndroidPhoneAdapter::cameraFrame);
         LOGGER.info("MC Android Phone ready; right-click the Android Phone to connect");
     }
 
@@ -97,6 +101,8 @@ public final class AndroidPhoneAdapter {
             .then(literal("poweroff").executes(ctx -> { poweroff(); tell("安卓已关机。"); return 1; }))
             .then(literal("runtime").executes(ctx -> { tell(runtime == null ? "当前没有由 Mod 启动的运行环境。" :
                 runtime.status()+"；日志："+runtime.sessionDirectory()); return 1; }))
+            .then(literal("environment").executes(ctx -> { tell(runtime==null?"当前没有运行中的安卓设备。":runtime.environmentStatus());return 1; }))
+            .then(literal("camera").executes(ctx -> { tell(runtime==null?"当前没有运行中的安卓设备。":runtime.cameraStatus());return 1; }))
             .then(literal("back").executes(ctx -> androidKey("BACK")))
             .then(literal("home").executes(ctx -> androidKey("HOME")))
             .then(literal("recent").executes(ctx -> androidKey("APP_SWITCH")))
@@ -142,7 +148,7 @@ public final class AndroidPhoneAdapter {
         }
         if(boot!=null && boot.isDone()) {
             var pending=boot;boot=null;
-            try { client=new BridgeClient(pending.join());client.start(); }
+            try { client=pending.join().connect();client.start(); }
             catch(java.util.concurrent.CompletionException | java.util.concurrent.CancellationException error) {
                 if(!runtimeFailureReported) {runtimeFailureReported=true;stop();tell("安卓启动失败："+(runtime==null?error:runtime.status()));}
             }
@@ -190,6 +196,14 @@ public final class AndroidPhoneAdapter {
             owned=matches(mc.player.getInventory().getItem(i));
         if (owned) missingTicks=0;
         else if (++missingTicks>=40) { stop(); return; }
+        if(runtime!=null && mc.level!=null) {
+            // Stowed devices follow their owner. UI grip rotation applies only while held.
+            boolean held=matches(mc.player.getMainHandItem());
+            runtime.publishEnvironment(ENVIRONMENT.sample(System.nanoTime(),mc.level.dimension().identifier().toString(),
+                mc.player.getX(),mc.player.getEyeY(),mc.player.getZ(),mc.player.getYRot(),mc.player.getXRot(),
+                held?POSE.rotation():0,held?POSE.tiltX():0,held?POSE.tiltY():0,
+                mc.level.getMaxLocalRawBrightness(mc.player.blockPosition()),owned&&!mc.isPaused()));
+        }
         if (!matches(mc.player.getMainHandItem())) {
             releaseTouch(); PhoneProjection.clear();
             if (mc.screen instanceof AndroidPhoneFocusScreen) mc.screen.onClose();
@@ -335,28 +349,37 @@ public final class AndroidPhoneAdapter {
     private static void logout(ClientPlayerNetworkEvent.LoggingOut event) { poweroff(); }
     private static void shutdown(GameShuttingDownEvent event) { poweroff(); }
 
-    private static java.util.concurrent.CompletableFuture<Path> startRuntime(Minecraft mc) {
+    private static java.util.concurrent.CompletableFuture<ManagedRuntime> startRuntime(Minecraft mc) {
+        if(runtime!=null&&!java.util.Objects.equals(runtimeDevice,device)){runtime.close();runtime=null;}
         if(runtime==null || runtime.state()==ManagedRuntime.State.FAILED || runtime.state()==ManagedRuntime.State.STOPPED) {
             if(runtime!=null)runtime.close();
             var options=new java.util.HashMap<String,String>();
-            for(String name:java.util.List.of("root","backend","gpu","python","qemu","iso","disk","diskFormat",
-                "kernel","initrd","ffmpeg","angle","width","height","density","memory","cpus","accel","guestArch","display","firmware","kernelAppend","input","colorOrder","bios")) {
+            for(String name:java.util.List.of("root","backend","gpu","qemu","iso","disk","diskFormat","dataDisk","dataDiskFormat","firmwareVars","firmwareVarsFormat","adbPort",
+                "kernel","initrd","ffmpeg","angle","width","height","density","memory","cpus","accel","guestArch","display","firmware","kernelAppend","input","colorOrder","bios","environment","storage","diskLayout","shutdownMethod","qemuData","camera","cameraTransport")) {
                 String property="mcandroidphone.runtime"+Character.toUpperCase(name.charAt(0))+name.substring(1);
                 String value=System.getProperty(property,"");if(!value.isBlank())options.put(name,value);
             }
+            options.put("deviceId",device.toString());runtimeDevice=device;
             runtime=new ManagedRuntime(mc.gameDirectory.toPath(),options,
-                ()->AndroidPhoneAdapter.class.getResourceAsStream("/mcandroidphone/runtime/bridge.zip"));
+                ()->AndroidPhoneAdapter.class.getResourceAsStream("/mcandroidphone/runtime/native-guard.jar"));
             runtimeFailureReported=false;
         }
         return runtime.start();
     }
+    private static java.util.UUID runtimeDevice;
+    private static void cameraFrame(net.neoforged.neoforge.client.event.RenderLevelStageEvent.AfterLevel event) {
+        var mc=Minecraft.getInstance();PhoneCamera.capture(mc,runtime,mc.player!=null&&matches(mc.player.getMainHandItem()));
+    }
     private static void poweroff() {
         stop();
+        PhoneCamera.close();
         if(runtime!=null) {runtime.close();runtime=null;}
     }
     static boolean managedRuntimeActive(){return runtime!=null && runtime.state()==ManagedRuntime.State.READY;}
 
     private static void stop() {
+        if(runtime!=null)runtime.invalidateEnvironment();
+        if(runtime!=null)runtime.invalidateCamera();
         releaseTouch(); POSE.reset(); boot=null; missingTicks=0; PhoneProjection.clear(); pendingTicks = 0; openFocus = false; device = null;
         if (client != null) { client.close(); client = null; }
         VIDEO.close();
@@ -400,6 +423,7 @@ public final class AndroidPhoneAdapter {
             poses.mulPose(com.mojang.math.Axis.XP.rotationDegrees((float)POSE.tiltX()));
             poses.mulPose(com.mojang.math.Axis.YP.rotationDegrees((float)POSE.tiltY()));
             poses.translate(-px,-py,0);
+            PhoneCamera.handset(poses.last().pose());
             if (focus) PhoneProjection.publish(poses.last().pose(),-halfWidth,halfHeight,halfWidth,-halfHeight,.025f);
             PhoneShell.submit(poses,collector,halfWidth,halfHeight);
             if (client!=null && !matches(mc.player.getMainHandItem())) return;
