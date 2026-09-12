@@ -14,6 +14,8 @@ public final class BootBenchmark {
         var p=new Properties();try(var reader=Files.newBufferedReader(Path.of(args[0]))){p.load(reader);}
         var options=new HashMap<String,String>();p.forEach((k,v)->options.put((String)k,(String)v));
         boolean initialize=Boolean.parseBoolean(options.remove("benchmarkInitialize"));
+        int prepareSeconds=Integer.parseInt(options.getOrDefault("benchmarkPrepareSeconds","60"));options.remove("benchmarkPrepareSeconds");
+        if(prepareSeconds<1||prepareSeconds>1800)throw new IllegalArgumentException("Prepare timeout must be 1..1800 seconds");
         options.put("storage",initialize?"persistent":"snapshot");
         if(initialize)options.put("deviceId",UUID.randomUUID().toString());
         var result=new LinkedHashMap<String,Object>();
@@ -23,7 +25,8 @@ public final class BootBenchmark {
         var runtime=new ManagedRuntime(evidence.resolve("game"),options,()->BootBenchmark.class.getResourceAsStream("/mcandroidphone/runtime/native-guard.jar"));
         PhoneConnection connection=null;boolean boot=false;long frames=0;
         try {
-            runtime.start().get(60,TimeUnit.SECONDS);
+            runtime.start().get(prepareSeconds,TimeUnit.SECONDS);
+            deadline=System.nanoTime()+TimeUnit.SECONDS.toNanos(200);
             result.put("runtimeReadyMs",TimeUnit.NANOSECONDS.toMillis(System.nanoTime()-start));
             result.put("session",runtime.sessionDirectory().toString());
             connection=runtime.connect();connection.start();

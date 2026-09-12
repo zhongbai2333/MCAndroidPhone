@@ -45,7 +45,19 @@ class PackageRuntimeSelfTest {
             require(Arrays.equals(before, manifest(pack(base, stage, temp.resolve("mod-update.jar")))), "Mod-only update changed runtime identity");
             Files.writeString(stage.resolve("disk"), "changed image");
             require(!Arrays.equals(before, manifest(pack(base, stage, temp.resolve("image-update.jar")))), "Image update failed to change runtime identity");
-            System.out.println("PACKAGE_REPRODUCIBILITY_OK identical bytes, stable cache, Unicode round-trip, image invalidation");
+            for(String key:List.of("disk","dataDisk","firmwareVars")){Files.delete(stage.resolve(key));config.remove(key);}
+            try(var out=Files.newOutputStream(stage.resolve("runtime.properties"))){BundleMetadata.writeProperties(config,out);}
+            var image=new Properties();image.setProperty("platform","android-arm64");image.setProperty("config.guestArch","arm64");image.setProperty("files","3");image.setProperty("download.sha256","a".repeat(64));image.setProperty("download.url","https://example.test/android.zip");
+            Path descriptor=temp.resolve("arm64.properties");try(var out=Files.newOutputStream(descriptor)){BundleMetadata.writeProperties(image,out);}
+            Path downloadJar=temp.resolve("download.jar");
+            PackageRuntime.main(new String[]{base.toString(),stage.toString(),"macos-arm64",downloadJar.toString(),"--image-manifest",descriptor.toString()});
+            try(var zip=new ZipFile(downloadJar.toFile())) {
+                require(zip.getEntry("mcandroidphone/bundle/macos-arm64/files/disk")==null,"Android media embedded into download package");
+                try(var in=zip.getInputStream(zip.getEntry("mcandroidphone/images/arm64.properties"))){require(Arrays.equals(in.readAllBytes(),Files.readAllBytes(descriptor)),"Pinned image descriptor changed");}
+            }
+            image.setProperty("platform","android-amd64");try(var out=Files.newOutputStream(descriptor)){BundleMetadata.writeProperties(image,out);}
+            try{PackageRuntime.main(new String[]{base.toString(),stage.toString(),"macos-arm64",temp.resolve("wrong-arch.jar").toString(),"--image-manifest",descriptor.toString()});throw new AssertionError("Wrong image architecture accepted");}catch(IOException expected){}
+            System.out.println("PACKAGE_REPRODUCIBILITY_OK identical bytes, stable cache, Unicode round-trip, image invalidation, native-only descriptor and architecture guard");
         } finally {
             TimeZone.setDefault(originalZone);
             try (var paths = Files.walk(temp)) {

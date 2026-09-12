@@ -39,6 +39,8 @@ jobs:
       - run: java scripts/Dev.java check
       - name: Reproducible runtime package and cache identity
         run: java scripts/PackageRuntimeSelfTest.java
+      - name: Universal runtime package isolation
+        run: java scripts/MergeRuntimePackagesSelfTest.java
       - name: Compile and probe IOSurface on macOS
         if: runner.os == 'macOS'
         run: java scripts/Dev.java native-probe
@@ -85,7 +87,7 @@ jobs:
           done
           exit 1
       - name: Verify compressed runtime packaging
-        run: java scripts/PackageRuntimeXZSelfTest.java build/libs/mcandroidphone-0.1.0-prototype.jar
+        run: java scripts/PackageRuntimeXZSelfTest.java build/libs/mcandroidphone-0.2.0-dev.20260913.jar
       - uses: actions/upload-artifact@v4
         with:
           name: mcandroidphone-jar

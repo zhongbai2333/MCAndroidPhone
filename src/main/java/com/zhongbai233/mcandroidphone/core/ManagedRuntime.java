@@ -186,27 +186,30 @@ public final class ManagedRuntime implements AutoCloseable {
         Path file=gameDirectory.resolve("config/mcandroidphone-runtime.properties");Files.createDirectories(file.getParent());
         if(!Files.exists(file))try{Files.writeString(file,"""
             # MC Android Phone Java runtime. Uses Minecraft's Java; no Python installation required.
-            # QEMU, FFmpeg and Android media are external native dependencies.
+            # Platform packages include QEMU; Android is downloaded and verified on first use.
             backend=qemu
-            gpu=virtio
-            display=auto
-            input=auto
+            # gpu/display/input and image defaults come from the platform package.
+            # Set explicit values below only when overriding that package.
             # root defaults to <game>/mcandroidphone/runtime; relative paths resolve against root.
             # guestArch=arm64
             # firmware=/path/to/edk2-aarch64-code.fd
             # disk=/path/to/android.qcow2
             # kernelAppend=console=ttyAMA0 ... (image-specific ARM64 kernel arguments)
-            width=1080
-            height=1920
-            density=480
-            memory=4096
-            cpus=2
-            accel=auto
+            # width=720
+            # height=1280
+            # memory=4096
+            # cpus=4
+            # accel=auto
             """,StandardOpenOption.CREATE_NEW);}catch(FileAlreadyExistsException ignored){}
         var p=new Properties();try(var reader=Files.newBufferedReader(file,StandardCharsets.UTF_8)){p.load(reader);}overrides.forEach(p::setProperty);
         if(p.getProperty("backend","qemu").equals("qemu")&&!Boolean.parseBoolean(p.getProperty("bios","false"))&&List.of("disk","iso","kernel").stream().allMatch(k->p.getProperty(k,"").isBlank())) {
-            message="正在检查并解压内置安卓运行包…";
+            message="正在检查并解压内置运行环境…";
             Properties embedded=RuntimeBundle.install(gameDirectory,name->ManagedRuntime.class.getResourceAsStream(name),this::cancelled);
+            if(embedded.getProperty("disk","").isBlank()) {
+                String arch=RuntimeConfig.arch(p.getProperty("guestArch",embedded.getProperty("guestArch",System.getProperty("os.arch"))));
+                Properties images=RemoteAndroidImages.install(gameDirectory,arch,name->ManagedRuntime.class.getResourceAsStream(name),this::cancelled,text->{cancelled();message=text;});
+                images.remove("root");embedded.putAll(images);
+            }
             for(String key:embedded.stringPropertyNames())p.putIfAbsent(key,embedded.getProperty(key));
         }
         Path root=Path.of(p.getProperty("root",gameDirectory.resolve("mcandroidphone/runtime").toString()));

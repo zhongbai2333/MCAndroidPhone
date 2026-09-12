@@ -3,7 +3,7 @@ loaderVersion="[4,)"
 license="MIT"
 [[mods]]
 modId="mcandroidphone"
-version="0.1.0-prototype"
+version="0.2.0-dev.20260913"
 displayName="MC Android Phone"
 authors="zhongbai233"
 description='''An Android phone item with a local display and touch bridge. Standalone phone rendering, input and GPU texture sharing.'''

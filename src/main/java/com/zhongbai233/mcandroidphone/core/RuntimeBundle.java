@@ -29,13 +29,21 @@ final class RuntimeBundle {
         }
     }
     static Properties install(Path game,Function<String,InputStream> resources,Runnable cancelled)throws IOException {
-        String platform=platform(),prefix="/mcandroidphone/bundle/"+platform+"/";byte[] bytes;
+        String platform=platform();
+        return install(game,resources,cancelled,platform,"/mcandroidphone/bundle/"+platform+"/","bundles");
+    }
+    static Properties installImages(Path game,String arch,Function<String,InputStream> resources,Runnable cancelled)throws IOException {
+        if(!Set.of("amd64","arm64").contains(arch))throw new IOException("Invalid Android image architecture");
+        return install(game,resources,cancelled,"android-"+arch,"/mcandroidphone/images/"+arch+"/","images");
+    }
+    private static Properties install(Path game,Function<String,InputStream> resources,Runnable cancelled,String platform,String prefix,String directory)throws IOException {
+        byte[] bytes;
         try(var in=resources.apply(prefix+"manifest.properties")){if(in==null)return new Properties();bytes=in.readNBytes(1024*1024+1);if(bytes.length>1024*1024)throw new IOException("Bundle manifest too large");}
         var manifest=new Properties();manifest.load(new ByteArrayInputStream(bytes));
         if(!Set.of("1","2").contains(manifest.getProperty("schema",""))||!manifest.getProperty("platform","").equals(platform))throw new IOException("Wrong embedded runtime platform/version");
         int count=Integer.parseInt(manifest.getProperty("files","0"));if(count<1||count>10000)throw new IOException("Invalid bundle file count");
         var entries=new ArrayList<Entry>();var names=new HashSet<String>();long total=0;
-        Path cache=Files.createDirectories(game.resolve("mcandroidphone/bundles"));
+        Path cache=Files.createDirectories(game.resolve("mcandroidphone/"+directory));
         Path installed=cache.resolve(platform+"-"+sha256(bytes));
         for(int i=0;i<count;i++) {
             String key="file."+i+".",name=manifest.getProperty(key+"path","");safePath(installed,name);

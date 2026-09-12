@@ -4,7 +4,7 @@ plugins {
 }
 base { archivesName = 'mcandroidphone' }
 group = 'com.zhongbai233.mcandroidphone'
-version = '0.1.0-prototype'
+version = '0.2.0-dev.20260913'
 repositories { mavenCentral() }
 // Private resource, not a shared Minecraft dependency or a second runtime installation.
 configurations { xzCodec { transitive = false } }
@@ -49,6 +49,7 @@ neoForge {
 }
 tasks.named('jar', Jar) {
     manifest.attributes('Implementation-Version': project.version)
+    from('LICENSE') { into 'META-INF'; rename { 'MCAndroidPhone-LICENSE.txt' } }
 }
 tasks.register('geometrySelfTest', JavaExec) {
     dependsOn testClasses
@@ -140,3 +141,10 @@ tasks.register('compressedBundleSelfTest', JavaExec) {
     mainClass = 'com.zhongbai233.mcandroidphone.core.CompressedBundleSelfTest'
 }
 tasks.named('check') { dependsOn 'compressedBundleSelfTest' }
+
+tasks.register('remoteAndroidImagesSelfTest', JavaExec) {
+    dependsOn testClasses, processResources
+    classpath = files(sourceSets.main.output, sourceSets.test.output)
+    mainClass = 'com.zhongbai233.mcandroidphone.core.RemoteAndroidImagesSelfTest'
+}
+tasks.named('check') { dependsOn 'remoteAndroidImagesSelfTest' }

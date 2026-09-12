@@ -49,7 +49,7 @@ class Dev {
         }
         if(mode.equals("quick")||mode.equals("runtime-smoke")) {
             compile();var base=List.of(java("java"),"--enable-native-access=ALL-UNNAMED","-cp",CLASSES.toString());
-            if(mode.equals("quick"))for(String test:List.of("core.CoreSelfTest","phone.PhoneGeometrySelfTest","core.EnvironmentSelfTest","core.CameraChannelSelfTest","core.StorageBundleSelfTest","core.SharedSystemDiskSelfTest","core.QmpShutdownSelfTest","core.ManagedRuntimeSelfTest")){var command=new ArrayList<>(base);command.add("com.zhongbai233.mcandroidphone."+test);if(test.endsWith("ManagedRuntimeSelfTest"))command.add(ROOT.resolve(".runtime").toString());run(command);}
+            if(mode.equals("quick"))for(String test:List.of("core.CoreSelfTest","phone.PhoneGeometrySelfTest","core.EnvironmentSelfTest","core.CameraChannelSelfTest","core.StorageBundleSelfTest","core.RemoteAndroidImagesSelfTest","core.SharedSystemDiskSelfTest","core.QmpShutdownSelfTest","core.ManagedRuntimeSelfTest")){var command=new ArrayList<>(base);command.add("com.zhongbai233.mcandroidphone."+test);if(test.endsWith("ManagedRuntimeSelfTest"))command.add(ROOT.resolve(".runtime").toString());run(command);}
             else {var command=new ArrayList<>(base);command.add("com.zhongbai233.mcandroidphone.core.RuntimeSmoke");command.add(ROOT.resolve(".runtime").toString());settings.forEach((k,v)->command.add(k+"="+v));run(command);}return;
         }
         if(mode.equals("native-probe")) {

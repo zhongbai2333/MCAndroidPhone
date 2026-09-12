@@ -20,19 +20,35 @@ class PackageRuntime {
         }
         return new Encoded(source,Files.size(source),HexFormat.of().formatHex(digest.digest()),checksum.getValue());
     }
+    static void verifyCompressed(Path base,Path compressed,Path original)throws Exception {encoded(base,compressed,Files.size(original),hash(original));}
     static String hash(Path p)throws Exception {var h=MessageDigest.getInstance("SHA-256");try(var in=Files.newInputStream(p)){byte[] b=new byte[1024*1024];int n;while((n=in.read(b))!=-1)h.update(b,0,n);}return HexFormat.of().formatHex(h.digest());}
     public static void main(String[] args)throws Exception {
-        if(args.length!=4&&(args.length!=6||!args[4].equals("--xz-dir")))throw new IllegalArgumentException("base.jar stage-directory platform output.jar [--xz-dir precompressed-directory]");
+        if(args.length<4||(args.length-4)%2!=0)throw new IllegalArgumentException("base.jar stage-directory platform output.jar [--xz-dir directory] [--image-manifest descriptor.properties]");
+        Path compressedArg=null,imageManifest=null;
+        for(int a=4;a<args.length;a+=2) {
+            if(args[a].equals("--xz-dir")&&compressedArg==null)compressedArg=Path.of(args[a+1]).toRealPath();
+            else if(args[a].equals("--image-manifest")&&imageManifest==null)imageManifest=Path.of(args[a+1]).toRealPath();
+            else throw new IllegalArgumentException("Unknown or duplicate packaging option: "+args[a]);
+        }
+        byte[] imageBytes=null;
+        if(imageManifest!=null){imageBytes=Files.readAllBytes(imageManifest);if(imageBytes.length>65536)throw new IOException("Image descriptor too large");}
         Path base=Path.of(args[0]).toRealPath(),stage=Path.of(args[1]).toRealPath(),out=Path.of(args[3]).toAbsolutePath();String platform=args[2];
         if(!platform.matches("(windows|linux|macos)-(amd64|arm64)"))throw new IllegalArgumentException("Invalid platform");
         if(out.startsWith(stage))throw new IllegalArgumentException("Output cannot be inside stage directory");
         var config=new Properties();try(var in=Files.newInputStream(stage.resolve("runtime.properties"))){config.load(in);}
         if(!config.getProperty("guestArch","").equals(platform.substring(platform.indexOf('-')+1)))throw new IllegalArgumentException("Image architecture differs from package");
-        for(String key:List.of("qemu","ffmpeg","disk","dataDisk","firmware","firmwareVars")) {
+        if(imageBytes!=null) {
+            var image=new Properties();image.load(new ByteArrayInputStream(imageBytes));
+            String arch=platform.substring(platform.indexOf('-')+1);
+            if(!image.getProperty("platform","").equals("android-"+arch)||!image.getProperty("config.guestArch","").equals(arch)||!image.getProperty("files","").equals("3")||!image.getProperty("download.sha256","").matches("[0-9a-f]{64}"))throw new IOException("Image download descriptor differs from native platform");
+            if(!"https".equals(java.net.URI.create(image.getProperty("download.url","")).getScheme()))throw new IOException("Image downloads require HTTPS");
+            for(String key:List.of("disk","dataDisk","firmwareVars","iso","kernel","initrd"))if(!config.getProperty(key,"").isBlank())throw new IOException("Download package must not also embed Android media");
+        }
+        for(String key:imageBytes==null?List.of("qemu","ffmpeg","disk","dataDisk","firmware","firmwareVars"):List.of("qemu","ffmpeg","firmware")) {
             String name=config.getProperty(key,"");Path p=stage.resolve(name).normalize();
             if(name.isEmpty()||Path.of(name).isAbsolute()||!p.startsWith(stage)||!Files.isRegularFile(p,LinkOption.NOFOLLOW_LINKS))throw new IOException("Missing relative staged "+key);
         }
-        Path compressed=args.length==6?Path.of(args[5]).toRealPath():null;
+        Path compressed=compressedArg;
         var encodedFiles=new HashMap<Path,Encoded>();
         List<Path> files;try(var paths=Files.walk(stage)){files=paths.filter(p->!Files.isDirectory(p,LinkOption.NOFOLLOW_LINKS)).sorted().toList();}
         var manifest=new Properties();manifest.setProperty("schema","1");manifest.setProperty("platform",platform);manifest.setProperty("files",""+files.size());
@@ -57,6 +73,7 @@ class PackageRuntime {
             try(var zip=new ZipOutputStream(Files.newOutputStream(tmp));var original=new ZipFile(base.toFile())) {
                 zip.setLevel(4);
                 for(var e:original.stream().sorted(Comparator.comparing(ZipEntry::getName)).toList()){if(e.getName().startsWith("mcandroidphone/bundle/"))throw new IOException("Base JAR already has a runtime");zip.putNextEntry(BundleMetadata.entry(e.getName()));if(!e.isDirectory())try(var in=original.getInputStream(e)){in.transferTo(zip);}zip.closeEntry();}
+                if(imageBytes!=null){zip.putNextEntry(BundleMetadata.entry("mcandroidphone/images/"+config.getProperty("guestArch")+".properties"));zip.write(imageBytes);zip.closeEntry();}
                 zip.putNextEntry(BundleMetadata.entry(prefix+"manifest.properties"));BundleMetadata.writeProperties(manifest,zip);zip.closeEntry();
                 for(Path p:files) {
                     var entry=BundleMetadata.entry(prefix+"files/"+stage.relativize(p).toString().replace('\\','/'));var encoded=encodedFiles.get(p);
