@@ -32,7 +32,8 @@ class StageMacRuntime {
         }
     }
     public static void main(String[] args)throws Exception {
-        if(args.length!=2||!System.getProperty("os.name").startsWith("Mac"))throw new IllegalArgumentException("java StageMacRuntime.java local-runtime.properties new-stage-directory (macOS only)");
+        boolean nativeOnly=args.length==3&&args[2].equals("--native-only");
+        if((args.length!=2&&!nativeOnly)||!System.getProperty("os.name").startsWith("Mac"))throw new IllegalArgumentException("java StageMacRuntime.java local-runtime.properties new-stage-directory [--native-only] (macOS only)");
         var config=new Properties();try(var in=Files.newBufferedReader(Path.of(args[0]))){config.load(in);}
         Path stage=Path.of(args[1]).toAbsolutePath();Files.createDirectory(stage);Files.createDirectories(stage.resolve("bin"));Files.createDirectories(stage.resolve("lib"));
         var mapped=new LinkedHashMap<Path,Path>();var names=new HashMap<String,Path>();var queue=new ArrayDeque<Path>();
@@ -64,11 +65,12 @@ class StageMacRuntime {
         }
         Path root=Path.of(config.getProperty("root","."));
         Files.createDirectories(stage.resolve("images"));
-        for(String key:List.of("disk","dataDisk","firmwareVars","firmware")) {
+        for(String key:nativeOnly?List.of("firmware"):List.of("disk","dataDisk","firmwareVars","firmware")) {
             Path source=Path.of(config.getProperty(key));if(!source.isAbsolute())source=root.resolve(source);
             String name="images/"+key+"-"+source.getFileName();Files.copy(source,stage.resolve(name));config.setProperty(key,name);
         }
         copyQemuData(Path.of("/opt/homebrew/share/qemu"),stage.resolve("share/qemu"),config);config.setProperty("qemuData","share/qemu");
+        if(nativeOnly)for(String key:List.of("disk","dataDisk","firmwareVars","deviceId","kernel","initrd","iso"))config.remove(key);
         config.remove("root");config.remove("deviceId");config.setProperty("adbPort","0");config.setProperty("storage","persistent");
         // This local stock image has no production guest environment/camera service yet.
         config.setProperty("environment","false");
