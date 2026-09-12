@@ -52,3 +52,11 @@ Java 游戏侧当前需显式 `environment=true`。测试接收器与正式系�
 2026-09-09 增加关机资源覆盖：`overlay/frameworks/base/core/res/res/values/config.xml` 把长按电源设为无确认正常关机（行为值 3、500 ms），关闭长按呼出助手的设置入口。配套运行时配置必须使用 `shutdownMethod=power-key`，Java 将按住虚拟电源键 1500 ms，并等待 QEMU 的来宾关机事件。系统默认短按电源仍可用于息屏。已有用户数据中显式保存的电源键设置可能覆盖资源默认值，不会自动重写旧设备设置。普通用户关机无需 ADB。
 
 该十一文件特化已在独立 fixture 应用并重复检查；资源默认值仍需完整系统编译后验收。本机真实 Android 验证使用开发测试配置设置等效长按行为，不等于已编译此 overlay。配置与证据见 [正常关机](../../docs/guest-shutdown.md)。
+
+Windows/WSL 接续现使用 `MCANDROIDPHONE_BUILD_JOBS=2` 为默认并行度，构建调用为 `m -j 2 vm-utm-zip`。可根据实际内存显式调整，范围 1–256；该限制不会把物理内存变大，也不能保证大规模 Soong 配置阶段在低内存机器上成功。构建证据增加实际并行度、内存和文件系统剩余空间。
+
+### 构建清单与只读沙箱
+
+`build-go.sh` 在进入 Ninja 前，将真实 Repo 锁定清单保存到本轮报告目录，并原子更新 `out/mcandroidphone/build-manifest.xml`。两个 Go 产品的镜像清单规则依赖这个输入，只在 `out/` 内生成输出，保留上游 proprietary 排除逻辑。其他产品继续使用上游规则。这样避免 Repo 在编译沙箱中尝试更新用户目录或 `.repo` 下的缓存。
+
+直接执行 Go 的 `m build-manifest.xml` 前，也必须先准备这个锁定输入；正常使用 `build-go.sh` 会自动完成。输入缺失时构建应失败，不能拿空清单或旧镜像产物绕过源码版本记录。

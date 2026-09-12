@@ -1,0 +1,190 @@
+[
+  {
+    "repository": "android_device_virt_virtio_x86_64",
+    "path": "device/virt/virtio_x86_64",
+    "branch": "lineage-23.2",
+    "sha": "9de894dfb1bca01566bc15f11823fe57112276c6",
+    "dependencies": [
+      {
+        "repository": "android_device_virt_virtio-common",
+        "target_path": "device/virt/virtio-common"
+      }
+    ]
+  },
+  {
+    "repository": "android_device_virt_virtio_arm64only",
+    "path": "device/virt/virtio_arm64only",
+    "branch": "lineage-23.2",
+    "sha": "05609653c67fe93de3a7f0e115a1680355c9a8e5",
+    "dependencies": [
+      {
+        "repository": "android_device_virt_virtio-common",
+        "target_path": "device/virt/virtio-common"
+      },
+      {
+        "repository": "android_device_virt_virtio_arm64",
+        "target_path": "device/virt/virtio_arm64"
+      }
+    ]
+  },
+  {
+    "repository": "android_device_virt_virtio-common",
+    "path": "device/virt/virtio-common",
+    "branch": "lineage-23.2",
+    "sha": "f17927b21dd5eceaf85c8dd3f3e7f8e1a7d3d074",
+    "dependencies": [
+      {
+        "repository": "android_device_virt_virt-common",
+        "target_path": "device/virt/virt-common"
+      }
+    ]
+  },
+  {
+    "repository": "android_device_virt_virtio_arm64",
+    "path": "device/virt/virtio_arm64",
+    "branch": "lineage-23.2",
+    "sha": "3346a2fb77da6c8a2728cca8313530ba74de3798",
+    "dependencies": [
+      {
+        "repository": "android_device_virt_virtio-common",
+        "target_path": "device/virt/virtio-common"
+      }
+    ]
+  },
+  {
+    "repository": "android_device_virt_virt-common",
+    "path": "device/virt/virt-common",
+    "branch": "lineage-23.2",
+    "sha": "071865e9d0c202785c971e0d9ee114e36a514ad7",
+    "dependencies": [
+      {
+        "repository": "android_device_mainline_common",
+        "target_path": "device/mainline/common"
+      },
+      {
+        "repository": "android_external_mesa",
+        "target_path": "external/mesa"
+      },
+      {
+        "repository": "android_kernel_mainline_configs",
+        "target_path": "kernel/mainline/configs"
+      },
+      {
+        "repository": "android_kernel_virt_virtio",
+        "target_path": "kernel/virt/virtio"
+      },
+      {
+        "repository": "android_prebuilts_bootmgr",
+        "target_path": "prebuilts/bootmgr"
+      }
+    ]
+  },
+  {
+    "repository": "android_device_mainline_common",
+    "path": "device/mainline/common",
+    "branch": "lineage-23.2",
+    "sha": "5c5fd330f4cc0d7214eca65032b03c252b008f82",
+    "dependencies": [
+      {
+        "repository": "android_external_drm_hwcomposer-upstream",
+        "target_path": "external/drm_hwcomposer-upstream"
+      },
+      {
+        "repository": "android_external_minigbm-upstream",
+        "target_path": "external/minigbm-upstream"
+      },
+      {
+        "repository": "android_external_linux-firmware-mainline",
+        "target_path": "external/linux-firmware-mainline"
+      },
+      {
+        "repository": "android_external_mesa",
+        "target_path": "external/mesa"
+      },
+      {
+        "repository": "android_hardware_mainline_common",
+        "target_path": "hardware/mainline/common"
+      }
+    ]
+  },
+  {
+    "repository": "android_external_mesa",
+    "path": "external/mesa",
+    "branch": "lineage-23.2",
+    "sha": "5a6bb76986d2d111599baf18e1dcd20b5ffd02c4",
+    "dependencies": [
+      {
+        "repository": "android_prebuilts_mesa-build-dep",
+        "target_path": "prebuilts/mesa-build-dep"
+      }
+    ]
+  },
+  {
+    "repository": "android_kernel_mainline_configs",
+    "path": "kernel/mainline/configs",
+    "branch": "lineage-23.2",
+    "sha": "1bf0c59fb857f4eadd02346f1dafedc4dbcdfafd",
+    "dependencies": []
+  },
+  {
+    "repository": "android_kernel_virt_virtio",
+    "path": "kernel/virt/virtio",
+    "branch": "lineage-23.2",
+    "sha": "4f6bf47200d9cf735e65cad80823295d2141982c",
+    "dependencies": []
+  },
+  {
+    "repository": "android_prebuilts_bootmgr",
+    "path": "prebuilts/bootmgr",
+    "branch": "lineage-23.2",
+    "sha": "811ba971e891b1f3e7412dfcaac633af5517892f",
+    "dependencies": []
+  },
+  {
+    "repository": "android_external_drm_hwcomposer-upstream",
+    "path": "external/drm_hwcomposer-upstream",
+    "branch": "lineage-23.2",
+    "sha": "8976786556df09c42b4ad41dd93969c6792f324d",
+    "dependencies": [
+      {
+        "repository": "android_external_libdisplay-info-upstream",
+        "target_path": "external/libdisplay-info-upstream"
+      }
+    ]
+  },
+  {
+    "repository": "android_external_minigbm-upstream",
+    "path": "external/minigbm-upstream",
+    "branch": "lineage-23.2",
+    "sha": "51b97430ef97474b386bc958d67e5171a86d0d76",
+    "dependencies": []
+  },
+  {
+    "repository": "android_external_linux-firmware-mainline",
+    "path": "external/linux-firmware-mainline",
+    "branch": "lineage-23.2",
+    "sha": "ef88d24dfc10e30826789b82fca417d6f913ee2a",
+    "dependencies": []
+  },
+  {
+    "repository": "android_hardware_mainline_common",
+    "path": "hardware/mainline/common",
+    "branch": "lineage-23.2",
+    "sha": "553ab9663b1a2f0afd8b95313f7701c29437be3e",
+    "dependencies": []
+  },
+  {
+    "repository": "android_prebuilts_mesa-build-dep",
+    "path": "prebuilts/mesa-build-dep",
+    "branch": "lineage-23.2",
+    "sha": "1121f16432d25f08db3844588f12e1e2eaf8f42d",
+    "dependencies": []
+  },
+  {
+    "repository": "android_external_libdisplay-info-upstream",
+    "path": "external/libdisplay-info-upstream",
+    "branch": "lineage-23.2",
+    "sha": "d24cede4ffdeb8a130d5923a04a315aa02a1de79",
+    "dependencies": []
+  }
+]

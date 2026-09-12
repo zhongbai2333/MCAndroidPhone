@@ -48,6 +48,15 @@ class Prepare {
             optionalPackage(root.resolve("build/make/target/product/handheld_system.mk"),name);
         optionalPackage(root.resolve("vendor/lineage/config/common_mobile.mk"),"Backgrounds");
         optionalPackage(root.resolve("vendor/lineage/config/common.mk"),"vim");
+        // product_config.mk appends CUSTOM_LOCALES after resolving PRODUCT_LOCALES.
+        // Keep upstream translations for other products; our Go images ship en/zh resources.
+        String customLocales = "CUSTOM_LOCALES += \\\n    ast_ES \\\n    ckb_IQ \\\n    ckb_IR \\\n    gd_GB \\\n    cy_GB \\\n    fur_IT \\\n    nn_NO";
+        patch(root.resolve("vendor/lineage/config/common.mk"), customLocales,
+                "ifeq ($(filter " + GO_TARGETS + ",$(TARGET_PRODUCT)),)\n" + customLocales
+                        + "\nendif # MCANDROIDPHONE_CUSTOM_LOCALES_V1");
+        patch(root.resolve("vendor/lineage/build/tasks/build-manifest_xml.mk"),
+                "$(INSTALLED_BUILD_MANIFEST_XML_TARGET):\n\tmkdir -p $(dir $@)\n\tREPO_TRACE=0 python3 .repo/repo/repo manifest -o - -r | grep -Ev \"proprietary_$(MANIFEST_EXCLUDES)\" > $@",
+                "ifneq ($(filter lineage_virtio_arm64only_go lineage_virtio_x86_64_go,$(TARGET_PRODUCT)),)\n# MCANDROIDPHONE_BUILD_MANIFEST_V1: Repo runs before the read-only build sandbox.\n$(INSTALLED_BUILD_MANIFEST_XML_TARGET): $(OUT_DIR)/mcandroidphone/build-manifest.xml\n\tmkdir -p $(dir $@)\n\tgrep -Ev \"proprietary_$(MANIFEST_EXCLUDES)\" \"$<\" > \"$@.tmp\" && mv \"$@.tmp\" \"$@\"\nelse\n$(INSTALLED_BUILD_MANIFEST_XML_TARGET):\n\tmkdir -p $(dir $@)\n\tREPO_TRACE=0 python3 .repo/repo/repo manifest -o - -r | grep -Ev \"proprietary_$(MANIFEST_EXCLUDES)\" > $@\nendif # MCANDROIDPHONE_BUILD_MANIFEST_V1");
         append(root.resolve("device/virt/virtio-common/BoardConfigCommon.mk"),"BOARD_VENDOR_SEPOLICY_DIRS += vendor/mcandroidphone/sepolicy");
         Path sensors=root.resolve("hardware/interfaces/sensors/aidl/default");
         patch(sensors.resolve("Sensor.cpp"),"#include \"sensors-impl/Sensor.h\"","#include \"sensors-impl/Sensor.h\"\n#include \"EnvironmentState.h\" // "+MARK);
@@ -92,7 +101,19 @@ class Prepare {
                 location.verticalAccuracyMeters = 1.0f;""");
         // Stock example NMEA describes a different location. Do not advertise that data.
         patch(gnss.resolve("Gnss.cpp"),"                this->reportNmea();","                // "+MARK+": virtual NMEA is not implemented.");
+        // Keep upstream init and boot-density overrides; specialize only the two Go defaults.
+        String upstreamInit="$(VIRT_COMMON_PATH)/configs/init/init.virt.rc";
+        patch(root.resolve("device/virt/virt-common/virt-common.mk"),
+                upstreamInit+":$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.virt.rc",
+                "$(if $(filter "+GO_TARGETS+",$(TARGET_PRODUCT)),vendor/mcandroidphone/init.virt.rc,"+upstreamInit+"):$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.virt.rc");
+        String init=Files.readString(root.resolve("device/virt/virt-common/configs/init/init.virt.rc"));
+        String density="setprop ro.sf.lcd_density ${ro.boot.lcd_density:-160}";
+        if(init.indexOf(density)<0||init.indexOf(density)!=init.lastIndexOf(density))throw new IOException("Upstream density anchor changed");
+        byte[] goInit=init.replace(density,"setprop ro.sf.lcd_density ${ro.boot.lcd_density:-320}").getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        Path initDestination=root.resolve("vendor/mcandroidphone/init.virt.rc");
+        if(Files.exists(initDestination)&&!Arrays.equals(Files.readAllBytes(initDestination),goInit))throw new IOException("Refusing to overwrite edited init: "+initDestination);
         Map<Path,byte[]> copies=new LinkedHashMap<>();
+        copies.put(initDestination,goInit);
         for(String entry:List.of("guest","sepolicy","overlay","product.mk","go-optimization.mk"))try(var files=Files.walk(source.resolve(entry))) {
             for(Path file:files.filter(Files::isRegularFile).toList()) {
                 Path destination=root.resolve("vendor/mcandroidphone").resolve(source.relativize(file));byte[] data=Files.readAllBytes(file);

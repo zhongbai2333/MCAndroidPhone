@@ -20,15 +20,19 @@ bool transfer(int fd,uint8_t* bytes,size_t count,bool writing) {
         if(ready==0)continue;
         ssize_t n=writing?write(fd,bytes,count):read(fd,bytes,count);
         if(n<0&&(errno==EAGAIN||errno==EINTR))continue;
-        if(n<=0)return false;bytes+=n;count-=n;
+        if(n<=0)return false;
+        bytes+=n;count-=n;
     }
     return true;
 }
 bool store(const std::string& path,const std::vector<uint8_t>& frame) {
     std::vector<uint8_t> bytes;mcphone::putBig(bytes,mcphone::monotonicNanos(),8);bytes.insert(bytes.end(),frame.begin(),frame.end());
     std::string temporary=path+".tmp";int fd=open(temporary.c_str(),O_WRONLY|O_CREAT|O_TRUNC|O_CLOEXEC|O_NOFOLLOW,0644);
-    if(fd<0)return false;bool ok=transfer(fd,bytes.data(),bytes.size(),true);close(fd);
-    if(ok)ok=rename(temporary.c_str(),path.c_str())==0;if(!ok)unlink(temporary.c_str());return ok;
+    if(fd<0)return false;
+    bool ok=transfer(fd,bytes.data(),bytes.size(),true);close(fd);
+    if(ok)ok=rename(temporary.c_str(),path.c_str())==0;
+    if(!ok)unlink(temporary.c_str());
+    return ok;
 }
 std::string findPort() {
     std::error_code ec;

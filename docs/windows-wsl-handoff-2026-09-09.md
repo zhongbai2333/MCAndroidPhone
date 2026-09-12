@@ -1,5 +1,7 @@
 # Windows / WSL2 交接 · 2026-09-09
 
+Windows 已接续并完成首轮原生 Java / D-Bus / D3D11 及 WSL 回归，发现的问题、修复和后续 Go 构建条件见 [Windows 接续验收](windows-validation-2026-09-09.md)。下文保留 Mac 交接时的状态。 Android Go 的真实源码同步和一次性构建流程已启动，见 [Go 构建推进](go-build-progress-2026-09-09.md)。
+
 接续分支：`codex/windows-wsl-handoff-20260909`，仓库为 [zhongbai2333/MCAndroidPhone](https://github.com/zhongbai2333/MCAndroidPhone)。本文件是当前接续入口；其他按日期记录的文档中“未提交/未推送”、旧体积和临时快照描述属于当时状态。此分支上传源码和少量测试证据，不发布新的正式版本。
 
 ## 目标与现状

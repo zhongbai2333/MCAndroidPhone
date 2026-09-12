@@ -17,7 +17,7 @@ class VerifyGoConfig {
                 "PRODUCT_SYSTEM_SERVER_COMPILER_FILTER","speed-profile","PRODUCT_ART_TARGET_INCLUDE_DEBUG_BUILD","false",
                 "PRODUCT_MINIMIZE_JAVA_DEBUG_INFO","true");
         required.forEach((k,v)->{if(!v.equals(p.getProperty(k,"")))throw new IllegalArgumentException(k+" must be "+v+", got "+p.getProperty(k));});
-        if(!words(p.getProperty("PRODUCT_LOCALES","")).equals(Set.of("en_US","zh_CN")))throw new IllegalArgumentException("Unexpected resource locales");
+        if(!words(p.getProperty("PRODUCT_LOCALES","")).equals(Set.of("en_US","zh_CN")))throw new IllegalArgumentException("Unexpected resource locales: " + p.getProperty("PRODUCT_LOCALES", ""));
         if(!words(p.getProperty("PRODUCT_DEXPREOPT_SPEED_APPS","")).containsAll(Set.of("SystemUI","Launcher3QuickStepGo")))
             throw new IllegalArgumentException("Missing hot-app precompilation");
         Set<String> packages=words(p.getProperty("PRODUCT_PACKAGES",""));

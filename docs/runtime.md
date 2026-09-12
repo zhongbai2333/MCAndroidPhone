@@ -46,6 +46,7 @@ cpus=2
 | `kernel`、`initrd` | x86 ISO 自动匹配其同名目录中的 kernel、initrd.img |
 | `disk`、`diskFormat` | 独立 raw 或 qcow2 系统模板，新游戏物品默认使用固定底盘和独立差分盘 |
 | `diskLayout` | overlay（默认）或 copy；只决定新手机的系统盘布局，已有手机沿用保存的格式 |
+| `cpuModel` | QEMU CPU 型号；AMD64 默认 Nehalem，新构建的 AMD64 Go 镜像使用 SandyBridge。仅接受型号名，不接受附加 feature 参数 |
 | `shutdownMethod` | qmp（默认）或 power-key；后者要求镜像配置长按电源直接关机。等待来宾确认，超时记录强制清理；见 [正常关机](guest-shutdown.md) |
 | `dataDisk`、`dataDiskFormat` | 可选第二块 virtio 用户盘，同样按物品持久化。AMD64 双盘选择 Q35 和 virtio-net；新增 AMD64 Go 镜像尚待实机验证 |
 | `storage` | persistent 或 snapshot；无设备 UUID 的测试入口默认 snapshot |
@@ -63,14 +64,14 @@ cpus=2
 | `firmwareVars`、`firmwareVarsFormat` | 可选 EFI 变量模板，持久模式按手机保存，快照模式复制到独立会话；raw（默认）或 qcow2，UTM 的 .fd 也可能是 qcow2 |
 | `adbPort` | 可选本机 ADB 转发端口，默认 0 关闭；启用时只绑定 127.0.0.1，映射来宾 5555，仍需来宾开启并授权 ADB |
 | `kernelAppend` | ARM64 直接内核引导必须填写镜像匹配的参数 |
-| `width`、`height`、`density` | 宽高通过 virtio 显示的 EDID 请求，实际尺寸由来宾决定；density 仅写入自动生成的 Android-x86 内核参数，磁盘引导的 ARM64 系统需在来宾中设置显示密度 |
+| `width`、`height`、`density` | 宽高通过 virtio 显示的 EDID 请求，实际尺寸由来宾决定；density 仅写入自动生成的 Android-x86 内核参数，磁盘引导的系统需使用镜像默认值或在来宾中设置显示密度 |
 | `colorOrder` | rgb 或 bgr；默认匹配 ARM/固件及 Android-x86 的原有策略 |
 
 旧配置中的 `python` 已无作用，可以删除。QEMU 的 DLL、固件和模块应完整保留。当前不会自动下载镜像、提取内核或安装原生依赖。ARM64 兼容性已验证到上述特定 LineageOS 镜像，其他镜像仍需分别验收。
 
 ## 显示与生命周期
 
-Mac/Linux：QEMU VNC → Java RFB → FFmpeg → Java NV12 direct buffer → OpenGL。Windows CPU：QEMU D-Bus 共享 surface → Java → FFmpeg → 同一 NV12 队列。Windows GPU：D3D11 handle → Java/OpenGL，保留零 CPU 像素复制、一次 GPU 缓存复制。GPU 租约在渲染器释放后才回复 QEMU；重连重新注册监听器以取得静态桌面首帧。Windows 原生迁移尚待 Windows 实机验证，不能沿用旧 Python 后端的验收结论。
+Mac/Linux：QEMU VNC → Java RFB → FFmpeg → Java NV12 direct buffer → OpenGL。Windows CPU：QEMU D-Bus 共享 surface → Java → FFmpeg → 同一 NV12 队列。Windows GPU：D3D11 handle → Java/OpenGL，保留零 CPU 像素复制、一次 GPU 缓存复制。GPU 租约在渲染器释放后才回复 QEMU；重连重新注册监听器以取得静态桌面首帧。Windows AMD64 已完成本轮 Java 原生 D-Bus/D3D11、真实 Android 输入及进程回收验收，修复与边界见 [Windows 接续记录](windows-validation-2026-09-09.md)；其他 Windows 架构仍需分别验证。
 
 CPU 帧用四个有引用计数的直接缓冲区，只缓存最新帧；尺寸变化和重连更新 epoch，旧帧不会覆盖新会话。每个 FFmpeg 转换器最多一帧在途。输入经过有界工作队列，不在游戏线程等待本地 I/O。
 
@@ -92,3 +93,5 @@ sh gradlew build runtimeSelfTest
 Windows 使用 test-phone.cmd / gradlew.bat；入口同样只需 Java。覆盖优先级：JVM/Gradle > properties > 默认值，例如 `-PphoneRuntimeIso=...`。完整测试入口见 [quick-test](quick-test.md)。
 
 显式 `-Dmcandroidphone.config=/path/to/bridge.properties`（开发 `-PbridgeConfig=...`）仍可连接外部旧桥接，此时不启动或接管外部进程。Python 目录仅保留作旧协议回归和 SDK Emulator 等外部诊断，不参与发行 JAR，也不是普通启动流程的一部分。
+
+开发入口也支持 `test-phone.cmd qemu --runtime-config path/to/runtime.properties`（macOS/Linux 使用 `test-phone.sh`）。按命令行顺序应用配置，后面的 `--gpu` 或 `--set` 可覆盖文件值；不会改写已有手机数据。Windows Go 当前验收与本机配置见 [Windows Go 实机验收](windows-go-validation-2026-09-12.md)。

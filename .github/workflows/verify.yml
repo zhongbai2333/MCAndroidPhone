@@ -40,6 +40,13 @@ jobs:
         run: java scripts/Dev.java native-probe
       - name: Core, protocol and owned-process lifecycle
         run: java scripts/Dev.java quick
+      - name: Linux native environment wire and stale-state checks
+        if: runner.os == 'Linux'
+        run: |
+          mkdir -p android/tools/build
+          g++ -std=c++17 -Wall -Wextra -Werror android/image/guest/environmentd.cpp -o android/tools/build/environmentd
+          g++ -std=c++17 -Wall -Wextra -Werror android/tools/inspect-state.cpp -o android/tools/build/inspect-state
+          java -cp build/portable-classes com.zhongbai233.mcandroidphone.core.EnvironmentNativeSelfTest android/tools/build/environmentd android/tools/build/inspect-state
   legacy-diagnostics:
     runs-on: ubuntu-latest
     timeout-minutes: 10

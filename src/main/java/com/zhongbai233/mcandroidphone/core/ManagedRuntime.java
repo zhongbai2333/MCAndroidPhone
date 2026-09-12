@@ -74,9 +74,17 @@ public final class ManagedRuntime implements AutoCloseable {
         Path temp=session.resolve("session.json.tmp");Files.writeString(temp,Json.write(info));
         Files.move(temp,session.resolve("session.json"),StandardCopyOption.REPLACE_EXISTING,StandardCopyOption.ATOMIC_MOVE);
     }
-    private static int port(boolean vnc)throws IOException {
-        for(int i=0;i<100;i++)try(var socket=new ServerSocket(0,1,InetAddress.getLoopbackAddress())){if(!vnc||socket.getLocalPort()>=5900)return socket.getLocalPort();}
-        throw new IOException("No free local port");
+    static int port(boolean vnc)throws IOException {
+        // Windows can allocate ephemeral ports below 5900, often reusing the same one.
+        // VNC needs a nonnegative display number; probe its valid range explicitly.
+        InetAddress loopback=InetAddress.getByName("127.0.0.1");
+        BindException last=null;
+        for(int i=0;i<100;i++) {
+            int candidate=vnc?ThreadLocalRandom.current().nextInt(5900,65536):0;
+            try(var socket=new ServerSocket(candidate,1,loopback)){return socket.getLocalPort();}
+            catch(BindException unavailable){last=unavailable;}
+        }
+        throw new IOException("No free IPv4 loopback port for "+(vnc?"VNC":"QMP"),last);
     }
     private void run() {
         try {
@@ -115,7 +123,7 @@ public final class ManagedRuntime implements AutoCloseable {
                         if(devices.contains("virtio-multitouch-pci"))input="touchscreen";
                     }
                 }
-                int vnc=port(true),qmp;do{qmp=port(false);}while(qmp==vnc);String uuid=UUID.randomUUID().toString();qmpPort=qmp;vmUuid=uuid;
+                int vnc=config.display().equals("vnc")?port(true):0,qmp;do{qmp=port(false);}while(qmp==vnc);String uuid=UUID.randomUUID().toString();qmpPort=qmp;vmUuid=uuid;
                 if(config.flag("environment"))environment=new EnvironmentChannel();
                 if(config.flag("camera"))camera=new CameraChannel();
                 var command=config.qemu(session,vnc,qmp,uuid,input,environment==null?0:environment.port(),camera==null?0:camera.port());
@@ -136,7 +144,13 @@ public final class ManagedRuntime implements AutoCloseable {
                 synchronized(this){for(var p:processes){if(!p.name.startsWith("qemu-devices")&&p.name.startsWith("qemu-")&&!p.alive())throw new IOException("QEMU exited: "+p.tail());
                     if(Files.exists(p.log)&&Files.size(p.log)>64L*1024*1024)throw new IOException("Native log size limit exceeded");}}
                 Thread.sleep(100);}
-        }catch(Exception error){if(!stop){state=State.FAILED;message=error.getMessage()==null?error.toString():error.getMessage();}ready.completeExceptionally(error);}
+        }catch(Exception error){
+            if(!stop){
+                state=State.FAILED;message=error.getMessage()==null?error.toString():error.getMessage();
+                if(session!=null)try(var log=new PrintWriter(Files.newBufferedWriter(session.resolve("failure.log")))){error.printStackTrace(log);}catch(IOException ignored){}
+            }
+            ready.completeExceptionally(error);
+        }
         finally {
             // Stop accepting launches before closing native pipes, including concurrent resize launches.
             synchronized(this){stop=true;}

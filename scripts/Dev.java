@@ -24,6 +24,11 @@ class Dev {
     public static void main(String[] args)throws Exception {
         String mode=args.length==0?"pattern":args[0];boolean world=false,android=false,environment=false;String warmup="0";var settings=new LinkedHashMap<String,String>();
         for(int i=1;i<args.length;i++)switch(args[i]) {
+            case "--runtime-config"->{
+                var values=new Properties();
+                try(var reader=Files.newBufferedReader(Path.of(args[++i]))){values.load(reader);}
+                values.stringPropertyNames().forEach(key->settings.put(key,values.getProperty(key)));
+            }
             case "--world-smoke"->world=true;
             case "--android-smoke"->{world=true;android=true;}
             case "--environment-smoke"->{world=true;environment=true;settings.put("environment","true");}

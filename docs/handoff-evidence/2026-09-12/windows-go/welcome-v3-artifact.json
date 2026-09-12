@@ -1,0 +1,21 @@
+{
+  "bytes": 1062910559,
+  "sha256": "5bd799b171e1663584f33ae735270f4416da0f4a4b65c8f882ce753c0e09e1b1",
+  "zipCRC": "passed",
+  "diskCheck": {
+    "image-end-offset": 2076114944,
+    "total-clusters": 81920,
+    "check-errors": 0,
+    "allocated-clusters": 31667,
+    "filename": "/home/zhongbai233/android/lineage-23.2-mcphone/out/target/product/virtio_x86_64_go/VirtualMachine/UTM/LineageOS_Go_on_x86_64.utm/Data/vda.qcow2",
+    "format": "qcow2"
+  },
+  "builtDensityDefault": 320,
+  "report": "virtio_x86_64_go-oFxiHCf7",
+  "validation": {
+    "freshUserdata": true,
+    "startButton": "visible and opens language selection via production touch",
+    "shutdown": "guest-confirmed without Android settings edits",
+    "childrenRemaining": 0
+  }
+}

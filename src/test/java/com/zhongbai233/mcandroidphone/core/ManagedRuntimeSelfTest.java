@@ -36,6 +36,16 @@ public final class ManagedRuntimeSelfTest {
         }
         root=Path.of(args[0]).toAbsolutePath();Path game=Files.createTempDirectory("phone-java-runtime-test-");
         System.out.println("Java runtime evidence: "+game);
+        // Exercise the real allocator, including hosts whose dynamic range starts at 1024.
+        for(boolean vnc:List.of(false,true))for(int attempt=0;attempt<5;attempt++) {
+            int port=ManagedRuntime.port(vnc);
+            require(port>=(vnc?5900:1)&&port<=65535,"Invalid native listen port: "+port);
+            try(var listener=new java.net.ServerSocket(port,1,java.net.InetAddress.getByName("127.0.0.1"));
+                var client=new java.net.Socket("127.0.0.1",port);var accepted=listener.accept()) {
+                client.getOutputStream().write(71);require(accepted.getInputStream().read()==71,"Native loopback port unreachable");
+            }
+        }
+        System.out.println("NATIVE_IPV4_VNC_QMP_PORTS_OK");
         JavaProtocolSelfTest.run();
         var runtime=create(game.resolve("normal"),Map.of());
         try {

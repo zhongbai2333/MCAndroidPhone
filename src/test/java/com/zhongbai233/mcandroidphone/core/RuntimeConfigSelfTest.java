@@ -42,6 +42,10 @@ final class RuntimeConfigSelfTest {
         require(virtioCamera.stream().anyMatch(v->v.contains("name=com.mcandroidphone.camera"))&&virtioCamera.stream().noneMatch(v->v.contains("guestfwd=")),"Explicit VirtIO camera transport retained");
         require(command.stream().anyMatch(s->s.startsWith("if=pflash,unit=1,format=qcow2,")),"Explicit QCOW2 EFI variables");
         Files.writeString(session.resolve("efi-vars.fd"),"modified");require(Files.readString(root.resolve("vars.fd")).equals("pristine variables"),"EFI template was modified");
+        var goCpu=config(root,"Windows 11","amd64",Map.of("cpuModel","SandyBridge"));
+        var goCommand=goCpu.qemu(root,5901,50001,"uuid","mouse");
+        require(goCommand.get(goCommand.indexOf("-cpu")+1).equals("SandyBridge"),"Guest CPU model must match the compiled Android architecture");
+        try {config(root,"Windows 11","amd64",Map.of("cpuModel","SandyBridge,+avx")).qemu(root,5901,50001,"uuid","mouse");throw new AssertionError("CPU feature arguments accepted as model");}catch(IllegalArgumentException expected){}
         var amd=config(root,"Windows 11","amd64",Map.of("bios","false","disk","android.qcow2","dataDisk","userdata.qcow2"));
         command=amd.qemu(root,5901,50001,"uuid","mouse",50002);
         require(command.contains("q35,accel=whpx:tcg")&&command.contains("virtio-net-pci,netdev=net0")&&command.contains("virtio-blk-pci,drive=phone-data,bootindex=1"),"AMD64 VirtIO two-disk image support");

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Compact phone welcome layout: keep Start visible at 360 x 640 dp.
+     This product overlay is included only by MCAndroidPhone Go products. -->
+<resources>
+    <dimen name="welcome_content_container_padding_bottom">12dp</dimen>
+    <dimen name="welcome_content_container_padding_end">24dp</dimen>
+    <dimen name="welcome_content_container_padding_start">24dp</dimen>
+    <dimen name="welcome_title_text_size">32sp</dimen>
+    <dimen name="welcome_title_line_height">40dp</dimen>
+    <dimen name="welcome_accessibility_text_size">16sp</dimen>
+</resources>

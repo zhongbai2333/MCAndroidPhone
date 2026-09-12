@@ -88,8 +88,10 @@ final class RuntimeConfig {
         if(get("accel","auto").equals("auto")&&guest.equals("amd64")&&!accel.equals("tcg"))machine+=":tcg";
         String cameraTransport=get("cameraTransport","network");
         if(!Set.of("network","virtio").contains(cameraTransport))throw new IllegalArgumentException("Invalid camera transport");
+        String cpuModel=get("cpuModel",guest.equals("amd64")?"Nehalem":accel.equals("tcg")?"max":"host");
+        if(!cpuModel.matches("[A-Za-z0-9][A-Za-z0-9_.-]{0,63}"))throw new IllegalArgumentException("Invalid CPU model");
         var args=new ArrayList<String>(List.of(executable("qemu",guest.equals("arm64")?"qemu-system-aarch64":"qemu-system-x86_64").toString(),
-            "-name","MCAndroidPhone","-machine",machine,"-cpu",guest.equals("amd64")?"Nehalem":accel.equals("tcg")?"max":"host",
+            "-name","MCAndroidPhone","-machine",machine,"-cpu",cpuModel,
             "-m",""+memory,"-smp",""+cpus,"-display",display.equals("dbus")?"dbus,p2p=on,gl="+(gpu.equals("virgl")?"on":"off"):"none",
             "-vga","none","-device",video+",id=phone-display,xres="+w+",yres="+h+",max_outputs=1,edid=on",
             "-device","qemu-xhci,id=usb","-device",input.equals("touchscreen")?"virtio-multitouch-pci,id=phone-touch,display=phone-display":"usb-tablet,bus=usb.0",

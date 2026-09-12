@@ -54,7 +54,9 @@ final class DbusCodecSelfTest {
     }
     private static void windows()throws Exception {
         var pair=WindowsSocket.pair(Path.of(System.getProperty("java.io.tmpdir")));
-        try(var a=pair[0];var b=pair[1]){require(b.share(ProcessHandle.current().pid()).length==628,"WSAPROTOCOL_INFOW ABI");a.output().write(new byte[]{23,45,67});require(Arrays.equals(b.input().readNBytes(3),new byte[]{23,45,67}),"Winsock AF_UNIX stream");}
+        try(var a=pair[0];var b=pair[1]){require(b.share(ProcessHandle.current().pid()).length==628,"WSAPROTOCOL_INFOW ABI");a.output().write(new byte[]{23,45,67});require(Arrays.equals(b.input().readNBytes(3),new byte[]{23,45,67}),"Winsock AF_UNIX stream");
+            try{b.input().read();throw new AssertionError("Idle Winsock read did not time out");}catch(SocketTimeoutException expected){}
+            a.output().write(89);require(b.input().read()==89,"Winsock unusable after idle timeout");}
         System.out.println("WINDOWS_AF_UNIX_NATIVE_OK");
     }
 }
