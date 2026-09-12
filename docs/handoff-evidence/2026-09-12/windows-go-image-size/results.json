@@ -1,0 +1,92 @@
+{
+  "compression": {
+    "source": "/home/zhongbai233/android/lineage-23.2-mcphone/out/target/product/virtio_x86_64_go/VirtualMachine/UTM/LineageOS_Go_on_x86_64.utm/Data/vda.qcow2",
+    "sourceBytes": 2163605504,
+    "sourceSha256": "4dc2e820a38ac65e28009b9c3dcdeb047a8a39ad2b7fb8c506cde604cec66c3e",
+    "results": [
+      {
+        "name": "xz-plain",
+        "seconds": 398.17,
+        "bytes": 807674824,
+        "path": "/home/zhongbai233/src/MCAndroidPhone-handoff-20260909/.runtime/evidence/image-size-20260912/vda-plain.qcow2.xz",
+        "sha256": "6d798896ceb98fc429b73d47f9653d34950e0ffb5a961be8ddef1c431366f73b"
+      },
+      {
+        "name": "xz-x86",
+        "seconds": 386.09,
+        "bytes": 803311332,
+        "path": "/home/zhongbai233/src/MCAndroidPhone-handoff-20260909/.runtime/evidence/image-size-20260912/vda-x86.qcow2.xz",
+        "sha256": "7eb98846095c42a70d2f54f3d6232bc5d0dfc601cfd288ed32885741cf76ed33"
+      },
+      {
+        "name": "qcow-zstd",
+        "seconds": 18.46,
+        "bytes": 1135440896,
+        "path": "/home/zhongbai233/src/MCAndroidPhone-handoff-20260909/.runtime/evidence/image-size-20260912/vda-zstd.qcow2",
+        "sha256": "10f6ba0f5cf68b615da97bbc42920e7f88cf9b43b0eda1e5c74956cf8f523ef5"
+      }
+    ],
+    "virtualDiskCompare": "identical"
+  },
+  "zlib": {
+    "name": "qcow-zlib",
+    "secondsIncludingValidation": 70.12,
+    "bytes": 1139972608,
+    "sha256": "e313fdae27892c17d0fe902bf862ce9dc1cd2fd7b5f9fc5b014fb97e768df626",
+    "virtualDiskCompare": "identical"
+  },
+  "archive": {
+    "archive": "D:\\UserFile\\Documents\\GitHub\\MCAndroidPhone\\.runtime\\packages\\lineage-go-amd64-v5-images-xz.zip",
+    "bytes": 803320927,
+    "sha256": "1f7d8819819a2511ce374a65962dece8868a8c202a5f15505f92a9cf45c64478",
+    "zipCrc": "passed",
+    "files": {
+      "vda.qcow2.xz": {
+        "bytes": 803311332,
+        "sha256": "7eb98846095c42a70d2f54f3d6232bc5d0dfc601cfd288ed32885741cf76ed33"
+      },
+      "vdb.qcow2": {
+        "bytes": 196864,
+        "sha256": "de001102cbc8ff7aa8eb6c69d750cf22b94104935a0de6277ec5f24509927745"
+      },
+      "efi_vars.fd": {
+        "bytes": 335360,
+        "sha256": "be0b35d7b31ca9b66bd634c6145480debf59502692d2a99144002d4d43be4b65"
+      }
+    },
+    "decodedSystemSha256": "4dc2e820a38ac65e28009b9c3dcdeb047a8a39ad2b7fb8c506cde604cec66c3e"
+  },
+  "javaDecoder": {
+    "maxHeapMiB": 256,
+    "decoderMemoryLimitMiB": 64,
+    "decodeAndWriteMs": 50087,
+    "byteIdentical": true
+  },
+  "zlibFreshBoot": {
+    "gpuRendered": false,
+    "storage": "persistent",
+    "newDeviceId": "8ae15edb-48af-4d02-8f02-5aef868f295c",
+    "runtimeReadyMs": 4660,
+    "session": "D:\\UserFile\\Documents\\GitHub\\MCAndroidPhone\\.runtime\\evidence\\image-size-20260912\\zlib-fresh\\game\\mcandroidphone\\sessions\\082169c5-5059-4b5f-abdb-6ed650d62e40",
+    "firstTransportFrameMs": 112926,
+    "bootCompletedMs": 118639,
+    "frames": 31,
+    "bootCompleted": true,
+    "finalState": "STOPPED",
+    "shutdownOutcome": "guest-confirmed"
+  },
+  "minecraft": {
+    "usedItem": "23:30:57",
+    "firstGpuFrame": "23:32:24",
+    "approxFirstGpuFrameSeconds": 87,
+    "warmupSeconds": 120,
+    "worldSmokeElapsedMs": 128027,
+    "welcomeScreenshotVerified": true,
+    "stowResumeSameConnection": true,
+    "resourceReload": true,
+    "cpuPixelCopies": 0,
+    "gpuCacheCopies": 1,
+    "state": "stopped",
+    "shutdownOutcome": "immediate-snapshot"
+  }
+}

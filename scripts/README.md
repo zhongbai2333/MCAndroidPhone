@@ -26,3 +26,16 @@
 ### 更小的 Mac ARM64 离线包
 
 `StageMacRuntime` 针对显式 UEFI 的 ARM64 virt 机器仅保留需要的 QEMU 数据类别；AMD64 路径保持完整复制。`CompressRuntime.java` 可准备原生文件和系统镜像的 XZ/ARM64 BCJ 压缩目录，再交给 `PackageRuntime --xz-dir` 做逐文件解码校验。500 MiB 预算、实测分项与取舍见 [体积预算记录](../docs/runtime-size-budget.md)。这些均为开发构建工具，普通用户通过 Java 自动解压运行时。
+
+
+### Windows AMD64 Go 镜像压缩
+
+`CompressRuntime` 增加 `--amd64-image-compact`，仅对明确的 AMD64 系统镜像使用 x86 BCJ + XZ 48 MiB 字典；平台和 `guestArch` 必须都匹配，原 ARM64 选项保持。普通 Java 用户不需要运行压缩工具。
+
+`java scripts/CompressRuntimeSelfTest.java /path/to/xz` 验证原生 XZ 往返与架构保护（源码联编需要 Java 25，也可 javac 两个工具类后运行）。`VerifyImageXZ` 使用成品 Mod JAR 内置解码器恢复压缩镜像，并与原盘的完整 SHA-256/字节数核对，只创建新的输出文件：
+
+```sh
+java -Xmx256m scripts/VerifyImageXZ.java BASE_MOD.jar SYSTEM.qcow2.xz ORIGINAL.qcow2 NEW_DECODED.qcow2
+```
+
+本机 766 MiB 镜像归档、首次 Java 解压开销、QCOW2 内部压缩的兼容性和启动验证见 [Windows Go 镜像体积](../docs/windows-go-image-size-2026-09-12.md)。镜像归档不等于完整离线 Mod 包。
