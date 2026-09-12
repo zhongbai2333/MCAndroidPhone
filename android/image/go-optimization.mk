@@ -23,3 +23,5 @@ PRODUCT_MINIMIZE_JAVA_DEBUG_INFO := true
 ifeq ($(TARGET_PRODUCT),lineage_virtio_x86_64_go)
 PRODUCT_SYSTEM_SERVER_COMPILER_FILTER := speed
 endif
+
+include vendor/mcandroidphone/compact/product.mk

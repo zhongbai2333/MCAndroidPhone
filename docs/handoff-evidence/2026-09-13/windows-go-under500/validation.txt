@@ -1,0 +1,8 @@
+2026-09-13 final source validation (all passed before artifact acceptance):
+java android/image/tests/PrepareSelfTest.java
+java android/image/tests/PrepareCompactSelfTest.java
+python3 android/image/tests/test_filter_webview.py
+bash -n android/image/build-go.sh
+
+Runtime acceptance: fresh v10 VirGL boot, production-touch calculator and 2048, Minecraft world smoke, manual screenshot review.
+Default local runtime remains v5; optional minimal config now points to clean v10 templates.

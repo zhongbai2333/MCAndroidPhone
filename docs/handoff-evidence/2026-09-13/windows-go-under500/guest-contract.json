@@ -1,0 +1,9 @@
+{
+  "bootCompleted": true,
+  "webviewFeature": false,
+  "webviewPreinstalled": false,
+  "jellyPreinstalled": false,
+  "device": "virtio_x86_64_go",
+  "egl": "angle",
+  "lowRam": true
+}

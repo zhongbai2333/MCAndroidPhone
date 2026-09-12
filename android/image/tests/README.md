@@ -4,6 +4,8 @@
 
 ```sh
 java android/image/tests/PrepareSelfTest.java
+java android/image/tests/PrepareCompactSelfTest.java
+python3 android/image/tests/test_filter_webview.py
 bash -n android/image/build-go.sh
 ```
 
@@ -27,8 +29,14 @@ java -Xmx256m -cp CANDIDATE.jar:TEST_CLASSES \
   TEST_CONFIG.properties NEW_EVIDENCE_DIR /path/to/adb calculator.apk game2048.apk go
 ```
 
-Windows classpath 使用分号。可选的最后一个参数指定已有的独立测试 game 目录，以复用解压缓存；每次仍创建新的手机 UUID。配置文件应指向**待测系统对应的独立、已初始化、开发 ADB 可用的用户盘种子**；不能将当前普通镜像的旧用户盘用于新 Go 系统验收。用默认本机镜像建立对照时，最后一个参数改为 `baseline`。`go` 模式要求实际来宾 `ro.config.low_ram=true` 且 `ro.product.device` 以 `_go` 结尾，普通镜像无法冒充 Go 通过。
+Windows classpath 使用分号。可选的最后一个参数指定已有的独立测试 game 目录，以复用解压缓存；每次仍创建新的手机 UUID。配置文件应指向**待测系统对应的独立、已初始化、开发 ADB 可用的整套磁盘种子**；不能将当前普通镜像的旧用户盘用于新 Go 系统验收。用默认本机镜像建立对照时，最后一个参数改为 `baseline`。`go` 模式要求实际来宾 `ro.config.low_ram=true` 且 `ro.product.device` 以 `_go` 结尾，普通镜像无法冒充 Go 通过。
 
 检查执行 APK 哈希验证、安装、启动、计算器 `12+34=46`、固定分辨率下的游戏 24 次滑动、后台返回，并记录属性、截图和内存。每次创建新手机 UUID，显示尺寸修改仅在测试手机内。游戏是否正常合并、得分及恢复状态仍须审阅截图；程序明确输出 `GAME_CAPTURES_REQUIRE_REVIEW`，不能把画面变化或进程存活当成可玩性/FPS 结论。
 
 这套样本不覆盖 WebView 游戏、3D/Vulkan、32 位原生 APK、Google Play 服务、反作弊或标准 Camera2。除本机 Mac ARM64 基线外，其他平台和真正 Go 镜像尚待验收。
+
+## 精简配置与磁盘配对
+
+compact 保留 WebView；minimal 取消预装 WebView 和 Jelly，因此不运行 WebView 成功验收。配置差异和实际镜像结果见 [精简镜像记录](../../../docs/android-go-compact.md)。
+
+AMD64 VirtIO 镜像把数据加密密钥保存在系统盘的 metadata 分区（当前 vda4），数据在 vdb。只把新系统模板与旧数据盘混用，会因缺少密钥而启动失败。优先建立全新、配套的测试设备；若为应用回归制作隔离迁移种子，必须保留配套 metadata，并证明新系统其余内容不变。这样的含测试密钥/数据的盘绝不能进入分发归档。

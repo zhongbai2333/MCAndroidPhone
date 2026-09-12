@@ -14,9 +14,15 @@ case "${1:-}" in
   amd64) target=virtio_x86_64 ;;
   *) echo 'Usage: LINEAGE_ROOT=/path/to/lineage bash android/image/build-go.sh arm64|amd64' >&2; exit 2 ;;
 esac
+profile=${2:-full}
+case "$profile" in full|compact|minimal) ;; *) echo 'Profile must be full, compact or minimal.' >&2; exit 2 ;; esac
+if [[ $profile != full && $target != virtio_x86_64 ]]; then echo 'Compact profiles currently require AMD64.' >&2; exit 2; fi
+export MCANDROIDPHONE_IMAGE_PROFILE="$profile"
 if [[ $(uname -s) != Linux ]]; then echo 'Android image builds require the prepared Linux build host.' >&2; exit 2; fi
 java "$project/android/image/Prepare.java" "$LINEAGE_ROOT" "$project" --check
 java "$project/android/image/Prepare.java" "$LINEAGE_ROOT" "$project"
+java "$project/android/image/PrepareCompact.java" "$LINEAGE_ROOT" --check
+java "$project/android/image/PrepareCompact.java" "$LINEAGE_ROOT"
 cd "$LINEAGE_ROOT"
 # Upstream envsetup is not nounset-safe. Keep error/pipe failure handling active.
 set +u

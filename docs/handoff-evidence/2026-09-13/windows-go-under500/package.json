@@ -1,0 +1,34 @@
+{
+  "profile": "minimal",
+  "archive": "D:\\UserFile\\Documents\\GitHub\\MCAndroidPhone\\.runtime\\packages\\lineage-go-amd64-minimal-v10-images-xz.zip",
+  "bytes": 497765444,
+  "decimalMB": 497.765444,
+  "MiB": 474.7061195373535,
+  "sha256": "e75d86ebf2dd29f24bbc5ff24e01d3e4ebd71313e7eff9d4a3e92e26b63c4d40",
+  "strictTargetBytes": 500000000,
+  "underTarget": true,
+  "zipCrc": "passed",
+  "includesQemuMod": false,
+  "webviewPreinstalled": false,
+  "jellyPreinstalled": false,
+  "compression": {
+    "dictionaryMiB": 48,
+    "seconds": 157.77,
+    "bytes": 497755756,
+    "sha256": "f7aafe8aba20891f2bd1391480e9b368d92a663971438bce24b37073d911dd8b"
+  },
+  "images": {
+    "vda.qcow2": {
+      "bytes": 1504706560,
+      "sha256": "e891177dc5f3b0743c39ef60e689cb78084718355d23fdfbd69281a12812d10b"
+    },
+    "vdb.qcow2": {
+      "bytes": 196864,
+      "sha256": "de001102cbc8ff7aa8eb6c69d750cf22b94104935a0de6277ec5f24509927745"
+    },
+    "efi_vars.fd": {
+      "bytes": 335360,
+      "sha256": "be0b35d7b31ca9b66bd634c6145480debf59502692d2a99144002d4d43be4b65"
+    }
+  }
+}

@@ -1,5 +1,7 @@
 # Windows / WSL2 交接 · 2026-09-09
 
+2026-09-13 接续：已构建并验证 AMD64 Go；最新 minimal 三盘镜像归档 **497,765,444 字节**，按用户批准的后备方案取消预装 WebView/Jelly。详见 [精简镜像结果与兼容性边界](android-go-compact.md)。这是镜像包，完整离线 JAR 尚未达到该体积；下文原始 Mac 交接目标与“未构建 Go”等描述为历史状态。
+
 Windows 已接续并完成首轮原生 Java / D-Bus / D3D11 及 WSL 回归，发现的问题、修复和后续 Go 构建条件见 [Windows 接续验收](windows-validation-2026-09-09.md)。下文保留 Mac 交接时的状态。 Android Go 的真实源码同步和一次性构建流程已启动，见 [Go 构建推进](go-build-progress-2026-09-09.md)。
 
 接续分支：`codex/windows-wsl-handoff-20260909`，仓库为 [zhongbai2333/MCAndroidPhone](https://github.com/zhongbai2333/MCAndroidPhone)。本文件是当前接续入口；其他按日期记录的文档中“未提交/未推送”、旧体积和临时快照描述属于当时状态。此分支上传源码和少量测试证据，不发布新的正式版本。

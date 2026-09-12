@@ -17,6 +17,10 @@ jobs:
           java-version: '25'
       - name: Go product configuration and patch safety (not an Android build)
         run: java android/image/tests/PrepareSelfTest.java
+      - name: Compact profile scope and WebView ABI filtering
+        run: |
+          java android/image/tests/PrepareCompactSelfTest.java
+          python3 android/image/tests/test_filter_webview.py
       - name: Check Linux image build script syntax
         run: bash -n android/image/build-go.sh
   portable-core:

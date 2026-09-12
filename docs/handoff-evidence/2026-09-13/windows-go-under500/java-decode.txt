@@ -1,0 +1,1 @@
+COMPRESSED_IMAGE_OK bytes=1504706560 sha256=e891177dc5f3b0743c39ef60e689cb78084718355d23fdfbd69281a12812d10b decodeAndWriteMs=28552 output=D:\UserFile\Documents\GitHub\MCAndroidPhone\.runtime\evidence\under500-20260912\v10-decoded.qcow2

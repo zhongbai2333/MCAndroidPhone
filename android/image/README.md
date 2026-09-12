@@ -2,7 +2,7 @@
 
 Fork 已创建：[zhongbai2333/android-lineage-qemu](https://github.com/zhongbai2333/android-lineage-qemu)，上游为 [jqssun/android-lineage-qemu](https://github.com/jqssun/android-lineage-qemu)。特化代码随当前 MCAndroidPhone 仓库的 `android/image` 交接，不在上游 fork 中；尚未触发完整 Android 远端编译。读取到的上游 main 为 `54fc5dc82fa05778be15c1200240be53f707a542`。Windows/WSL2 接续步骤见 [交接文档](../../docs/windows-wsl-handoff-2026-09-09.md)。
 
-产品基于 LineageOS 23.2 的 `virtio_arm64only_go`、`virtio_x86_64_go`，共用环境服务和 HAL 改动。六个平台组合见 `platforms.json`。当前只是构建计划及实现源码，尚无定制镜像产物、大小结论或六平台验收。
+产品基于 LineageOS 23.2 的 `virtio_arm64only_go`、`virtio_x86_64_go`，共用环境服务和 HAL 改动。六个平台组合见 `platforms.json`。Windows AMD64 Go 已完成构建与运行测试，见 [Windows 验收](../../docs/windows-go-validation-2026-09-12.md)；本轮新增可选的 [compact / minimal 体积配置](../../docs/android-go-compact.md)。这些结果不等于六平台验收。
 
 已另外实现六平台通用 JAR 打包器，并制作、验证现成 Android 镜像的 Mac ARM64 本地内置包。该包不是 Go 定制系统，状态与证据见 [本机功能验收](../../docs/local-features.md)。
 

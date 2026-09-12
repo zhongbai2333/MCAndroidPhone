@@ -141,7 +141,7 @@ class Prepare {
                     } else if (!strcmp(graphics, "swiftshader")) {
                         property_set("ro.hardware.egl", "angle");
                     }""");
-        for(String entry:List.of("guest","sepolicy","overlay","product.mk","go-optimization.mk"))try(var files=Files.walk(source.resolve(entry))) {
+        for(String entry:List.of("guest","sepolicy","overlay","compact","product.mk","go-optimization.mk"))try(var files=Files.walk(source.resolve(entry))) {
             for(Path file:files.filter(Files::isRegularFile).toList()) {
                 Path destination=root.resolve("vendor/mcandroidphone").resolve(source.relativize(file));byte[] data=Files.readAllBytes(file);
                 if(Files.exists(destination)&&!Arrays.equals(Files.readAllBytes(destination),data))throw new IOException("Refusing to overwrite edited overlay: "+destination);

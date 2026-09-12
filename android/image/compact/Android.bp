@@ -1,0 +1,13 @@
+// Developer image-build helpers, never installed in the Android guest.
+python_binary_host {
+    name: "mcphone-filter-webview",
+    main: "filter_webview.py",
+    srcs: ["filter_webview.py"],
+}
+soong_config_module_type {
+    name: "mcphone_webview_filter",
+    module_type: "genrule",
+    config_namespace: "mcandroidphone",
+    bool_variables: ["compact_amd64"],
+    properties: ["cmd"],
+}

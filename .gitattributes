@@ -2,6 +2,8 @@
 *.sh text eol=lf
 gradlew text eol=lf
 *.py text eol=lf
+*.mk text eol=lf
+*.bp text eol=lf
 *.java text eol=lf
 *.c text eol=lf
 *.m text eol=lf

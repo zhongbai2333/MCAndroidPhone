@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<permissions>
+    <!-- Only the opt-in minimal image lacks a WebView provider. -->
+    <unavailable-feature name="android.software.webview" />
+</permissions>
