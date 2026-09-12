@@ -58,6 +58,7 @@ cpus=2
 | `gpu` | virtio 为 CPU 路径；virgl 为 Windows 实验 D3D11 路径 |
 | `guestArch` | amd64 或 arm64，默认宿主架构 |
 | `accel` | auto、tcg、whpx、kvm、hvf；跨架构必须 TCG |
+| `whpxHyperv` | auto（保留 QEMU 默认）、on、off；仅 Windows AMD64/WHPX 可显式覆盖。Go AMD64 v5 本机验证使用 off，仍由 WHPX 加速；其他宿主保持 auto |
 | `display` | auto：Windows 用 D-Bus，Mac/Linux 用 VNC；也可显式指定 |
 | `input` | auto 检测 virtio-multitouch 支持；touchscreen 或 mouse 可显式指定 |
 | `firmware` | ARM64 UEFI 的只读 pflash；也可使用直接内核引导 |

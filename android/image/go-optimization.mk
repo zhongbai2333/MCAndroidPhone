@@ -17,3 +17,9 @@ PRODUCT_MINIMIZE_JAVA_DEBUG_INFO := true
 
 # Do not override Go's heap/LMKD settings blindly, remove WebView/APEX/HAL, or
 # disable DEX preoptimization globally. Compatibility is checked on built images.
+
+# Fully compile the x86_64 system-server startup path; ordinary APKs keep DEX/JIT.
+# ARM64 retains the upstream profile-based system-server compilation choice.
+ifeq ($(TARGET_PRODUCT),lineage_virtio_x86_64_go)
+PRODUCT_SYSTEM_SERVER_COMPILER_FILTER := speed
+endif

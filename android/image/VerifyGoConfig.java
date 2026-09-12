@@ -14,7 +14,7 @@ class VerifyGoConfig {
         if(!Set.of("lineage_virtio_arm64only_go","lineage_virtio_x86_64_go").contains(name))throw new IllegalArgumentException("Not an approved Go product: "+name);
         Map<String,String> required=Map.of("PRODUCT_DEVICE",name.substring("lineage_".length()),"PRODUCT_BRAND","MCAndroidPhone",
                 "TARGET_BUILD_VARIANT","user","PRODUCT_DEX_PREOPT_DEFAULT_COMPILER_FILTER","verify",
-                "PRODUCT_SYSTEM_SERVER_COMPILER_FILTER","speed-profile","PRODUCT_ART_TARGET_INCLUDE_DEBUG_BUILD","false",
+                "PRODUCT_SYSTEM_SERVER_COMPILER_FILTER",name.contains("x86_64")?"speed":"speed-profile","PRODUCT_ART_TARGET_INCLUDE_DEBUG_BUILD","false",
                 "PRODUCT_MINIMIZE_JAVA_DEBUG_INFO","true");
         required.forEach((k,v)->{if(!v.equals(p.getProperty(k,"")))throw new IllegalArgumentException(k+" must be "+v+", got "+p.getProperty(k));});
         if(!words(p.getProperty("PRODUCT_LOCALES","")).equals(Set.of("en_US","zh_CN")))throw new IllegalArgumentException("Unexpected resource locales: " + p.getProperty("PRODUCT_LOCALES", ""));

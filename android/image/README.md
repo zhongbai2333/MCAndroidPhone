@@ -37,7 +37,7 @@ LINEAGE_ROOT=/path/to/lineage bash android/image/build-go.sh amd64
 
 `Prepare.java` 现在将定制 `product.mk` 直接 include 到两个 Go 根产品末尾，修复子产品无法覆盖父产品已设置品牌等标量的问题；并替换根产品的 `languages_full.mk` 继承，避免最后追加中英文仍混入全语言资源。该设置针对源码资源构建，不会重新裁切现有预编译 APK。
 
-`go-optimization.mk` 对普通预装应用使用 `verify` 编译策略，保留 SystemUI/Go Launcher 的 speed 应用名单及 system server 的 speed-profile，不删除原始 DEX、不全局关闭 dexpreopt。调试 ART 和 Java 局部变量调试信息沿用上游精简策略，不把上游已有优化算成新增收益。WebView、输入法、全部字体、核心框架、APEX 和 HAL 保留。运行时 JIT/AOT 仍可按需编译；镜像大小、首启耗时和性能必须在真正 Go 产物上测量。
+`go-optimization.mk` 对普通预装应用使用 `verify` 编译策略，保留 SystemUI/Go Launcher 的 speed 应用名单；AMD64 system server 使用完整 speed 预编译以降低启动期解释/JIT 工作，ARM64 保留 speed-profile，不删除原始 DEX、不全局关闭 dexpreopt。调试 ART 和 Java 局部变量调试信息沿用上游精简策略，不把上游已有优化算成新增收益。WebView、输入法、全部字体、核心框架、APEX 和 HAL 保留。运行时 JIT/AOT 仍可按需编译；镜像大小、首启耗时和性能必须在真正 Go 产物上测量。
 
 五个可选模块（Backgrounds、BasicDreams、EasterEgg、PrintRecommendationService、vim）在实际声明处按两个 Go 目标条件省略，不使用对未展开继承列表无效的末尾 `filter-out`。非 Go 产品保留原包。
 
@@ -60,3 +60,4 @@ Windows/WSL 接续现使用 `MCANDROIDPHONE_BUILD_JOBS=2` 为默认并行度，�
 `build-go.sh` 在进入 Ninja 前，将真实 Repo 锁定清单保存到本轮报告目录，并原子更新 `out/mcandroidphone/build-manifest.xml`。两个 Go 产品的镜像清单规则依赖这个输入，只在 `out/` 内生成输出，保留上游 proprietary 排除逻辑。其他产品继续使用上游规则。这样避免 Repo 在编译沙箱中尝试更新用户目录或 `.repo` 下的缓存。
 
 直接执行 Go 的 `m build-manifest.xml` 前，也必须先准备这个锁定输入；正常使用 `build-go.sh` 会自动完成。输入缺失时构建应失败，不能拿空清单或旧镜像产物绕过源码版本记录。
+Go 启动模板将 GRUB 等待设为 1 秒，默认安静启动并省去开机动画；普通非 Go 产品仍使用上游模板。已有设备的持久化设置和系统版本不会自动改写。VirtIO 图形探测同步发布 EGL 实现，避免 SurfaceFlinger 在属性链尚未处理时首次启动失败。上游 ART GC 选择保留；虚拟设备属性显式声明。quiet 模式仍输出一条完成启动标记。Windows AMD64 实际计时及镜像哈希见 [冷启动验证](../../docs/windows-go-startup-2026-09-12.md)。

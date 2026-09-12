@@ -355,7 +355,7 @@ public final class AndroidPhoneAdapter {
             if(runtime!=null)runtime.close();
             var options=new java.util.HashMap<String,String>();
             for(String name:java.util.List.of("root","backend","gpu","qemu","iso","disk","diskFormat","dataDisk","dataDiskFormat","firmwareVars","firmwareVarsFormat","adbPort",
-                "kernel","initrd","ffmpeg","angle","width","height","density","memory","cpus","accel","cpuModel","guestArch","display","firmware","kernelAppend","input","colorOrder","bios","environment","storage","diskLayout","shutdownMethod","qemuData","camera","cameraTransport")) {
+                "kernel","initrd","ffmpeg","angle","width","height","density","memory","cpus","accel","cpuModel","whpxHyperv","guestArch","display","firmware","kernelAppend","input","colorOrder","bios","environment","storage","diskLayout","shutdownMethod","qemuData","camera","cameraTransport")) {
                 String property="mcandroidphone.runtime"+Character.toUpperCase(name.charAt(0))+name.substring(1);
                 String value=System.getProperty(property,"");if(!value.isBlank())options.put(name,value);
             }

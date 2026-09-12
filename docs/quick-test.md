@@ -13,6 +13,7 @@
 | `sh test-phone.sh qemu --gpu virgl` | Windows 实验 D3D11 共享纹理 |
 | `sh test-phone.sh bios --world-smoke` | x86 BIOS 固件诊断，跨架构自动 TCG |
 | `sh test-phone.sh runtime-smoke --set backend=pattern` | 不启动 MC，直接测试 Java 运行时画面 |
+| `sh test-phone.sh boot-benchmark --runtime-config phone.properties` | 不启动 MC，测关机后启动时间；默认使用临时磁盘快照 |
 
 通过 `--set KEY=VALUE` 设置运行参数，路径包含空格时给整个参数加引号。`--guest-arch arm64`、`--gpu virtio`、`--warmup 30` 为便捷选项。ARM 固件示例：
 
@@ -30,3 +31,7 @@ sh test-phone.sh runtime-smoke --set backend=qemu --set bios=true --set guestArc
 Gradle 也提供 `build runtimeSelfTest` 和 `runtimeSmoke`；后者通过 `-Pruntime.backend=pattern`、`-Pruntime.guestArch=arm64` 等传参。
 
 旧 Python 协议/SDK 诊断需显式执行 scripts 内相应 Python 文件，详见 [scripts/README](../scripts/README.md)。它们不参与普通游戏运行或 Java quick 测试。
+
+`boot-benchmark` 最长等待 200 秒，记录运行时就绪、首个传输帧、Android 完成启动及关机结果到独立证据目录。GPU 帧只接收并释放，不证明画面渲染正确；CPU 路径首帧可能只是固件。quiet 镜像需含 `MCANDROIDPHONE_BOOT_COMPLETED` 标记。旧镜像可显式加 `--set benchmarkNoBootLog=true`，此时只验帧、不声称 Android 已完成启动。
+
+首次创建用户数据的对照使用 `--set benchmarkInitialize=true`：工具创建独立 UUID 和证据目录内的持久化手机，保留数据供后续冷启动比较，且要求来宾确认关机。后续可使用其会话目录的 `runtime.properties` 再跑默认快照测试，不会修改这台对照手机。详见 [Windows 启动测量](windows-go-startup-2026-09-12.md)。

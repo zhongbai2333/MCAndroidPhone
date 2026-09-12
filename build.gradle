@@ -35,7 +35,7 @@ neoForge {
             }
             systemProperty 'mcandroidphone.runtimeRoot', rootProject.file(providers.gradleProperty('phoneRuntimeRoot').getOrElse('.runtime')).absolutePath
             ['Backend','Gpu','Qemu','Iso','Disk','DiskFormat','DataDisk','DataDiskFormat','FirmwareVars','FirmwareVarsFormat','AdbPort','Kernel','Initrd','Ffmpeg','Angle',
-             'Width','Height','Density','Memory','Cpus','Accel','GuestArch','Display','Firmware','KernelAppend','Input','ColorOrder','Bios','Environment','Storage','DiskLayout','ShutdownMethod','QemuData','Camera','CameraTransport'].each { suffix ->
+             'Width','Height','Density','Memory','Cpus','Accel','CpuModel','WhpxHyperv','GuestArch','Display','Firmware','KernelAppend','Input','ColorOrder','Bios','Environment','Storage','DiskLayout','ShutdownMethod','QemuData','Camera','CameraTransport'].each { suffix ->
                 def value = providers.gradleProperty('phoneRuntime' + suffix)
                 if (value.isPresent()) systemProperty 'mcandroidphone.runtime' + suffix, value.get()
             }
@@ -128,7 +128,7 @@ tasks.register('runtimeSmoke', JavaExec) {
     mainClass = 'com.zhongbai233.mcandroidphone.core.RuntimeSmoke'
     jvmArgs '--enable-native-access=ALL-UNNAMED'
     args rootProject.file('.runtime').absolutePath
-    ['backend','qemu','ffmpeg','guestArch','cpuModel','accel','firmware','bios','input','display','gpu','width','height','memory','cpus','iso','disk','dataDisk','dataDiskFormat','firmwareVars','firmwareVarsFormat','adbPort','kernel','initrd','kernelAppend','colorOrder','environment','expectedWidth','expectedHeight','warmupSeconds'].each { key ->
+    ['backend','qemu','ffmpeg','guestArch','cpuModel','whpxHyperv','accel','firmware','bios','input','display','gpu','width','height','memory','cpus','iso','disk','dataDisk','dataDiskFormat','firmwareVars','firmwareVarsFormat','adbPort','kernel','initrd','kernelAppend','colorOrder','environment','expectedWidth','expectedHeight','warmupSeconds'].each { key ->
         def value = providers.gradleProperty('runtime.' + key)
         if (value.isPresent()) args key + '=' + value.get()
     }

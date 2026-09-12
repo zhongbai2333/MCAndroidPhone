@@ -86,6 +86,12 @@ final class RuntimeConfig {
         String video=(guest.equals("arm64")?"virtio-gpu":"virtio-vga")+(gpu.equals("virgl")?"-gl":"")+(guest.equals("arm64")?"-pci":"");
         String machine=(guest.equals("arm64")?"virt,gic-version=3":dataDisk!=null?"q35":"pc")+",accel="+accel;
         if(get("accel","auto").equals("auto")&&guest.equals("amd64")&&!accel.equals("tcg"))machine+=":tcg";
+        String hyperv=get("whpxHyperv","auto");
+        if(!Set.of("auto","on","off").contains(hyperv))throw new IllegalArgumentException("Invalid WHPX Hyper-V mode");
+        if(!hyperv.equals("auto")) {
+            if(!accel.equals("whpx")||!guest.equals("amd64"))throw new IllegalArgumentException("WHPX Hyper-V override requires Windows AMD64 WHPX");
+            machine=machine.replace(",accel=whpx:tcg","").replace(",accel=whpx","");
+        }
         String cameraTransport=get("cameraTransport","network");
         if(!Set.of("network","virtio").contains(cameraTransport))throw new IllegalArgumentException("Invalid camera transport");
         String cpuModel=get("cpuModel",guest.equals("amd64")?"Nehalem":accel.equals("tcg")?"max":"host");
@@ -99,6 +105,10 @@ final class RuntimeConfig {
             "-netdev","user,id=net0"+(adbPort==0?"":",hostfwd=tcp:127.0.0.1:"+adbPort+"-:5555")+
                 (cameraPort==0||!cameraTransport.equals("network")?"":",guestfwd=tcp:10.0.2.100:18765-chardev:phone-camera"),
             "-device",guest.equals("arm64")||dataDisk!=null?"virtio-net-pci,netdev=net0":"e1000,netdev=net0","-no-reboot","-uuid",uuid));
+        if(!hyperv.equals("auto")) {
+            args.addAll(List.of("-accel","whpx,hyperv="+hyperv));
+            if(get("accel","auto").equals("auto"))args.addAll(List.of("-accel","tcg"));
+        }
         // USB serves UEFI; virtio carries Linux consumer keys (AC_HOME/AC_BACK) after boot.
         String data=get("qemuData","");if(!data.isEmpty()){Path folder=Path.of(data);if(!folder.isAbsolute())folder=root.resolve(folder);if(!Files.isDirectory(folder))throw new IOException("Missing QEMU data directory");args.addAll(List.of("-L",folder.toString()));}
         if(guest.equals("arm64"))args.addAll(List.of("-device","usb-kbd,bus=usb.0","-device","virtio-keyboard-pci,id=phone-keyboard","-device","virtio-rng-pci","-device","virtio-serial-pci"));

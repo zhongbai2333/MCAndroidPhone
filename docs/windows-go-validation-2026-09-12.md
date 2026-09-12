@@ -58,7 +58,7 @@ v2（只有密度/电源修复）ZIP SHA-256 `440f637adc5dfeceb36f1e91b0aaf1147a
 
 恢复使用独立 systemd 单元，MemoryHigh=20GiB / MemoryMax=22GiB / MemorySwapMax=48GiB，WSL 总上限仍 24 GiB，构建 12 路 / highmem 1 路。v2 20:27 完成（07:56），v3 20:47 完成（06:36），均 PIPELINE_EXIT=0；临时 48 GiB swap 自动删除，当前仅默认 6 GiB WSL swap。
 
-当前这台 Windows 已准备 `.runtime/go-windows.properties`，指向 v3 镜像、GPU virgl、无 ADB 转发。运行：
+本轮最初的 `.runtime/go-windows.properties` 指向 v3；后续已更新为启动优化 v5，见 [冷启动验证](windows-go-startup-2026-09-12.md)。GPU virgl、无 ADB 转发保持。运行：
 
 ```powershell
 $env:JAVA_HOME='D:\Program Files\Zulu\zulu-25'

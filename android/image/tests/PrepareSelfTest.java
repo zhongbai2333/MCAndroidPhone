@@ -15,6 +15,9 @@ class PrepareSelfTest {
         put(directory,"device/virt/virtio-common/BoardConfigCommon.mk","# Test board\n");
         put(directory,"device/virt/virt-common/virt-common.mk","PRODUCT_COPY_FILES += $(VIRT_COMMON_PATH)/configs/init/init.virt.rc:$(TARGET_COPY_OUT_VENDOR)/etc/init/hw/init.virt.rc\n");
         put(directory,"device/virt/virt-common/configs/init/init.virt.rc","on early-init\n    setprop ro.sf.lcd_density ${ro.boot.lcd_density:-160}\n");
+        put(directory,"device/virt/virt-common/build/tasks/20-grub.mk","GRUB_DEFAULT_ENV_VARS_FILE := $(VIRT_COMMON_PATH)/configs/misc/grubenv.txt\n");
+        put(directory,"device/virt/virt-common/configs/misc/grubenv.txt","grub_timeout=10 quiet=0 android_nobootanim=0 serial_console_function=default\n");
+        put(directory,"device/virt/virtio-common/services/virtgpu_detect/virtgpu_detect.c","#include <stdlib.h>\n        property_set(\"ro.vendor.graphics\", value ? \"mesa\" : \"swiftshader\");\n");
         put(directory,"hardware/interfaces/sensors/aidl/default/Sensor.cpp","#include \"sensors-impl/Sensor.h\"\n    readEventPayload(event.payload);\n");
         put(directory,"hardware/interfaces/sensors/aidl/default/Android.bp","    name: \"libsensorsexampleimpl\",\n");
         put(directory,"hardware/interfaces/gnss/aidl/default/Gnss.cpp","#include \"Gnss.h\"\nvoid Gnss::reportLocation(const GnssLocation& location) {\n                this->reportNmea();\n}\n");
@@ -40,7 +43,7 @@ class PrepareSelfTest {
         String product="lineage_virtio_"+arch+"_go";
         String mk="TARGET_PRODUCT := "+product+"\ninclude device/virt/virtio_"+arch+"/lineage_virtio_"+arch+"_go.mk\nall:\n\t@echo $(PRODUCT_BRAND) $(PRODUCT_LOCALES) $(PRODUCT_DEX_PREOPT_DEFAULT_COMPILER_FILTER) $(PRODUCT_SYSTEM_SERVER_COMPILER_FILTER) $(PRODUCT_DEVICE)\n";
         put(root,"Evaluate.mk",mk);String result=run(root,0,"make","--no-print-directory","-s","-f","Evaluate.mk").trim();
-        check(result.equals("MCAndroidPhone en_US zh_CN verify speed-profile virtio_"+arch+"_go"),"Root product override failed: "+result);
+        check(result.equals("MCAndroidPhone en_US zh_CN verify "+(arch.equals("x86_64")?"speed":"speed-profile")+" virtio_"+arch+"_go"),"Root product override failed: "+result);
     }
     static void packageScope(Path root,String target,boolean omitted)throws Exception {
         var mk=new StringBuilder("TARGET_PRODUCT := "+target+"\n");
@@ -89,6 +92,18 @@ class PrepareSelfTest {
             String overlay=go?"vendor/mcandroidphone/overlay":"vendor/lineage/overlay/common";
             String init=go?"vendor/mcandroidphone/init.virt.rc":"device/virt/virt-common/configs/init/init.virt.rc";
             check(result.equals(overlay+"\n"+init+":vendor/etc/init/hw/init.virt.rc"),"Phone defaults scope/precedence: "+result);
+        }
+        for(String target:List.of("lineage_virtio_arm64only_go","lineage_virtio_x86_64_go","lineage_virtio_x86_64")) {
+            put(root,"BootDefaults.mk","TARGET_PRODUCT := "+target+"\nVIRT_COMMON_PATH := device/virt/virt-common\ninclude device/virt/virt-common/build/tasks/20-grub.mk\nall:\n\t@echo $(GRUB_DEFAULT_ENV_VARS_FILE)\n");
+            String selected=run(root,0,"make","--no-print-directory","-s","-f","BootDefaults.mk").trim();
+            String value=Files.readString(root.resolve(selected));
+            check(value.contains(target.endsWith("_go")?"grub_timeout=1 quiet=1 ":"grub_timeout=10 quiet=0 "),"Boot profile leaked/missing: "+target);
+            check(value.contains(target.endsWith("_go")?"android_nobootanim=1 ":"android_nobootanim=0 "),"Boot animation scope: "+target);
+            if(target.endsWith("_go")) {
+                put(root,"Gc.mk","TARGET_PRODUCT := "+target+"\nPRODUCT_ENABLE_UFFD_GC := true\ninclude vendor/mcandroidphone/go-optimization.mk\nall:\n\t@echo $(PRODUCT_ENABLE_UFFD_GC) $(PRODUCT_SYSTEM_SERVER_COMPILER_FILTER)\n");
+                check(run(root,0,"make","--no-print-directory","-s","-f","Gc.mk").trim().equals(target.contains("x86_64")?"true speed":"true speed-profile"),"AOT/GC profile scope: "+target);
+            }
+
         }
         check(Files.readString(root.resolve("vendor/mcandroidphone/init.virt.rc")).contains("${ro.boot.lcd_density:-320}"),"Phone density fallback missing");
         check(Files.readString(root.resolve("device/virt/virt-common/configs/init/init.virt.rc")).contains("${ro.boot.lcd_density:-160}"),"Upstream density changed");

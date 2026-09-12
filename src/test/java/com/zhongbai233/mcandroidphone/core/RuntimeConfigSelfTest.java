@@ -18,6 +18,14 @@ final class RuntimeConfigSelfTest {
         var cross=config(root,"Mac OS X","aarch64",Map.of("guestArch","amd64"));require(cross.accelerator().equals("tcg"),"Cross architecture must use TCG");
         try{config(root,"Mac OS X","aarch64",Map.of("guestArch","amd64","accel","hvf")).accelerator();throw new AssertionError("Cross HVF accepted");}catch(IllegalArgumentException expected){}
         var win=config(root,"Windows 11","amd64",Map.of("gpu","virgl"));command=win.qemu(root,5901,50001,"uuid","touchscreen");require(win.display().equals("dbus")&&command.contains("dbus,p2p=on,gl=on")&&command.contains("pc,accel=whpx:tcg"),"Windows display/acceleration");
+        var hypervOff=config(root,"Windows 11","amd64",Map.of("accel","whpx","whpxHyperv","off"));
+        var hypervCommand=hypervOff.qemu(root,5901,50001,"uuid","mouse");
+        require(hypervCommand.contains("whpx,hyperv=off")&&hypervCommand.contains("pc")&&!hypervCommand.contains("tcg"),"Explicit WHPX enlightenments without disabling acceleration");
+        require(win.qemu(root,5901,50001,"uuid","mouse").stream().noneMatch(v->v.contains("hyperv=")),"Default hypervisor selection changed");
+        var autoHyperv=config(root,"Windows 11","amd64",Map.of("whpxHyperv","off")).qemu(root,5901,50001,"uuid","mouse");
+        require(autoHyperv.contains("whpx,hyperv=off")&&autoHyperv.contains("tcg")&&!autoHyperv.stream().anyMatch(v->v.contains("accel=")),"Auto acceleration retains TCG fallback with WHPX override");
+        try{config(root,"Windows 11","amd64",Map.of("whpxHyperv","invalid")).qemu(root,5901,50001,"uuid","mouse");throw new AssertionError("Invalid WHPX mode accepted");}catch(IllegalArgumentException expected){}
+        try{config(root,"Linux","amd64",Map.of("accel","kvm","whpxHyperv","off")).qemu(root,5901,50001,"uuid","mouse");throw new AssertionError("WHPX override accepted for KVM");}catch(IllegalArgumentException expected){}
         var linux=config(root,"Linux","aarch64",Map.of("firmware","firmware,readonly.fd","accel","kvm"));require(linux.display().equals("vnc")&&linux.accelerator().equals("kvm"),"Linux CPU display");
         var disk=config(root,"Mac OS X","aarch64",Map.of("bios","false","disk","android.qcow2","firmware","firmware,readonly.fd"));command=disk.qemu(root,5901,50001,"uuid","mouse");require(command.contains("-snapshot")&&command.stream().anyMatch(s->s.contains("if=virtio,format=qcow2")),"Read-only backing disk snapshot");
         var kernel=config(root,"Mac OS X","aarch64",Map.of("bios","false","kernel","kernel","initrd","initrd.img","kernelAppend","console=ttyAMA0 root=/dev/vda"));command=kernel.qemu(root,5901,50001,"uuid","mouse");require(command.contains("console=ttyAMA0 root=/dev/vda")&&!command.contains("-snapshot"),"ARM direct kernel without ISO");

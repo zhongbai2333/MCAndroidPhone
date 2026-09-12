@@ -1,0 +1,130 @@
+{
+  "zip": "/home/zhongbai233/android/lineage-23.2-mcphone/out/target/product/virtio_x86_64_go/VirtualMachine/UTM/UTM-VM-lineage-23.2-20260912-UNOFFICIAL-virtio_x86_64_go.zip",
+  "bytes": 1103426413,
+  "sha256": "7df844a80c9fd3ed494a1b7ec392f7fc78bc08c07887675330e71428b3a799e6",
+  "zipCrc": "passed",
+  "images": {
+    "vda.qcow2": {
+      "bytes": 2163605504,
+      "sha256": "4dc2e820a38ac65e28009b9c3dcdeb047a8a39ad2b7fb8c506cde604cec66c3e"
+    },
+    "vdb.qcow2": {
+      "bytes": 196864,
+      "sha256": "de001102cbc8ff7aa8eb6c69d750cf22b94104935a0de6277ec5f24509927745"
+    },
+    "efi_vars.fd": {
+      "bytes": 335360,
+      "sha256": "be0b35d7b31ca9b66bd634c6145480debf59502692d2a99144002d4d43be4b65"
+    }
+  },
+  "uffdGc": true,
+  "bootDefaults": "android_hwui_renderer= android_insecure_adb=0 android_lcd_density= android_low_perf=0 android_nobootanim=1 android_selinux_permissive=0 android_theme=1 android_wifi_impl= zram=0 grub_android_default=0 grub_timeout=1 kms_display_resolution= mitigations=auto quiet=1 serial_console_function=default",
+  "systemServerCompilerFilter": "speed",
+  "buildEvidence": "virtio_x86_64_go-1B9gSlIO",
+  "buildDuration": "08:13",
+  "benchmarks": {
+    "baseline": {
+      "gpuRendered": false,
+      "storage": "snapshot",
+      "runtimeReadyMs": 1466,
+      "session": "D:\\UserFile\\Documents\\GitHub\\MCAndroidPhone\\.runtime\\evidence\\boot-20260912\\baseline\\game\\mcandroidphone\\sessions\\dcd38f8a-908e-46ce-b72e-797b4eead93f",
+      "kernelObservedMs": 14883,
+      "firstTransportFrameMs": 122144,
+      "bootCompletedMs": 122572,
+      "frames": 10,
+      "bootCompleted": true,
+      "finalState": "STOPPED"
+    },
+    "two-cpus": {
+      "gpuRendered": false,
+      "storage": "snapshot",
+      "runtimeReadyMs": 1215,
+      "session": "D:\\UserFile\\Documents\\GitHub\\MCAndroidPhone\\.runtime\\evidence\\boot-20260912\\two-cpus\\game\\mcandroidphone\\sessions\\2a192a8d-ee6b-49b4-b391-3de7bf35bb68",
+      "kernelObservedMs": 15104,
+      "firstTransportFrameMs": 124664,
+      "bootCompletedMs": 125196,
+      "frames": 22,
+      "bootCompleted": true,
+      "finalState": "STOPPED"
+    },
+    "menu-quiet": {
+      "gpuRendered": false,
+      "storage": "snapshot",
+      "runtimeReadyMs": 1278,
+      "session": "D:\\UserFile\\Documents\\GitHub\\MCAndroidPhone\\.runtime\\evidence\\boot-20260912\\menu-quiet\\game\\mcandroidphone\\sessions\\f9e95cdc-23a8-4890-a64a-9937029fd7d8",
+      "firstTransportFrameMs": 103780,
+      "frames": 10,
+      "bootCompleted": false,
+      "finalState": "STOPPED"
+    },
+    "no-animation": {
+      "gpuRendered": false,
+      "storage": "snapshot",
+      "runtimeReadyMs": 1647,
+      "session": "D:\\UserFile\\Documents\\GitHub\\MCAndroidPhone\\.runtime\\evidence\\boot-20260912\\no-animation\\game\\mcandroidphone\\sessions\\976f6d5d-574b-4f9e-a8a2-dc8056e0e0ca",
+      "firstTransportFrameMs": 93897,
+      "frames": 10,
+      "bootCompleted": false,
+      "finalState": "STOPPED"
+    },
+    "cpu-display": {
+      "gpuRendered": false,
+      "storage": "snapshot",
+      "runtimeReadyMs": 926,
+      "session": "D:\\UserFile\\Documents\\GitHub\\MCAndroidPhone\\.runtime\\evidence\\boot-20260912\\cpu-display\\game\\mcandroidphone\\sessions\\3716f9a3-b9dd-47df-96be-d11b920a80b1",
+      "firstTransportFrameMs": 1403,
+      "kernelObservedMs": 15324,
+      "bootCompletedMs": 62596,
+      "frames": 1266,
+      "bootCompleted": true,
+      "finalState": "STOPPED"
+    },
+    "v4-clock": {
+      "gpuRendered": false,
+      "storage": "snapshot",
+      "runtimeReadyMs": 1151,
+      "session": "D:\\UserFile\\Documents\\GitHub\\MCAndroidPhone\\.runtime\\evidence\\boot-20260912\\v4-clock\\game\\mcandroidphone\\sessions\\a2d6faff-79a0-40fa-8a9a-e1322ab9a6c3",
+      "firstTransportFrameMs": 82817,
+      "frames": 10,
+      "bootCompleted": false,
+      "finalState": "STOPPED",
+      "shutdownOutcome": "immediate-snapshot"
+    },
+    "v4-max": {
+      "gpuRendered": false,
+      "storage": "snapshot",
+      "runtimeReadyMs": 1449,
+      "session": "D:\\UserFile\\Documents\\GitHub\\MCAndroidPhone\\.runtime\\evidence\\boot-20260912\\v4-max\\game\\mcandroidphone\\sessions\\500089d6-d27a-4da7-96f4-471b1b669e67",
+      "firstTransportFrameMs": 77166,
+      "frames": 10,
+      "bootCompleted": false,
+      "finalState": "STOPPED",
+      "shutdownOutcome": "immediate-snapshot"
+    },
+    "v5-fresh": {
+      "gpuRendered": false,
+      "storage": "persistent",
+      "newDeviceId": "38a72009-32ea-4963-b700-729efea6bae1",
+      "runtimeReadyMs": 8071,
+      "session": "D:\\UserFile\\Documents\\GitHub\\MCAndroidPhone\\.runtime\\evidence\\boot-20260912\\v5-fresh\\game\\mcandroidphone\\sessions\\c9254a42-2566-4d82-affe-25feca6a9abf",
+      "firstTransportFrameMs": 115746,
+      "bootCompletedMs": 121349,
+      "frames": 38,
+      "bootCompleted": true,
+      "finalState": "STOPPED",
+      "shutdownOutcome": "guest-confirmed"
+    },
+    "v5-cold": {
+      "gpuRendered": false,
+      "storage": "snapshot",
+      "runtimeReadyMs": 1101,
+      "session": "D:\\UserFile\\Documents\\GitHub\\MCAndroidPhone\\.runtime\\evidence\\boot-20260912\\v5-cold\\game\\mcandroidphone\\sessions\\a0bc0218-e4fb-43f4-975d-0b89e2f57f7b",
+      "firstTransportFrameMs": 82092,
+      "bootCompletedMs": 84761,
+      "frames": 31,
+      "bootCompleted": true,
+      "finalState": "STOPPED",
+      "shutdownOutcome": "immediate-snapshot"
+    }
+  }
+}

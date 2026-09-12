@@ -114,6 +114,33 @@ class Prepare {
         if(Files.exists(initDestination)&&!Arrays.equals(Files.readAllBytes(initDestination),goInit))throw new IOException("Refusing to overwrite edited init: "+initDestination);
         Map<Path,byte[]> copies=new LinkedHashMap<>();
         copies.put(initDestination,goInit);
+        // Quiet boot still emits one stable completion marker for bounded startup diagnostics.
+        // Keep the upstream environment template for non-phone products.
+        String grubSource="$(VIRT_COMMON_PATH)/configs/misc/grubenv.txt";
+        patch(root.resolve("device/virt/virt-common/build/tasks/20-grub.mk"),
+                "GRUB_DEFAULT_ENV_VARS_FILE := "+grubSource,
+                "GRUB_DEFAULT_ENV_VARS_FILE := $(if $(filter "+GO_TARGETS+",$(TARGET_PRODUCT)),vendor/mcandroidphone/grubenv.txt,"+grubSource+")");
+        String grub=Files.readString(root.resolve("device/virt/virt-common/configs/misc/grubenv.txt"));
+        for(String setting:List.of("grub_timeout=10 ","quiet=0 ","android_nobootanim=0 "))
+            if(grub.indexOf(setting)<0||grub.indexOf(setting)!=grub.lastIndexOf(setting))throw new IOException("Upstream boot defaults changed: "+setting);
+        byte[] goGrub=grub.replace("grub_timeout=10 ","grub_timeout=1 ").replace("quiet=0 ","quiet=1 ").replace("android_nobootanim=0 ","android_nobootanim=1 ").getBytes(java.nio.charset.StandardCharsets.UTF_8);
+        Path grubDestination=root.resolve("vendor/mcandroidphone/grubenv.txt");
+        if(Files.exists(grubDestination)&&!Arrays.equals(Files.readAllBytes(grubDestination),goGrub))throw new IOException("Refusing to overwrite edited boot defaults: "+grubDestination);
+        copies.put(grubDestination,goGrub);
+        // Property-trigger actions are queued after class_start core. Publish EGL in the
+        // synchronous detector so SurfaceFlinger does not crash once before those actions run.
+        Path detector=root.resolve("device/virt/virtio-common/services/virtgpu_detect/virtgpu_detect.c");
+        patch(detector,"#include <stdlib.h>","#include <stdlib.h>\n#include <string.h> // MCANDROIDPHONE_EGL_READY_V1");
+        patch(detector,"        property_set(\"ro.vendor.graphics\", value ? \"mesa\" : \"swiftshader\");", """
+                    property_set("ro.vendor.graphics", value ? "mesa" : "swiftshader");
+                    // MCANDROIDPHONE_EGL_READY_V1: respect a preselected graphics backend.
+                    char graphics[PROPERTY_VALUE_MAX];
+                    property_get("ro.vendor.graphics", graphics, "");
+                    if (!strcmp(graphics, "mesa") || !strcmp(graphics, "mesa_swrast")) {
+                        property_set("ro.hardware.egl", "mesa");
+                    } else if (!strcmp(graphics, "swiftshader")) {
+                        property_set("ro.hardware.egl", "angle");
+                    }""");
         for(String entry:List.of("guest","sepolicy","overlay","product.mk","go-optimization.mk"))try(var files=Files.walk(source.resolve(entry))) {
             for(Path file:files.filter(Files::isRegularFile).toList()) {
                 Path destination=root.resolve("vendor/mcandroidphone").resolve(source.relativize(file));byte[] data=Files.readAllBytes(file);

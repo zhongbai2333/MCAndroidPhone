@@ -40,6 +40,13 @@ class Dev {
         }
         if(android&&!mode.equals("qemu"))throw new IllegalArgumentException("--android-smoke requires qemu and an initialized Android image");
         if(mode.equals("check")){System.out.println("Java "+Runtime.version()+"; "+System.getProperty("os.name")+" "+System.getProperty("os.arch")+"; Python required=false");return;}
+        if(mode.equals("boot-benchmark")) {
+            compile();Path evidence=Files.createDirectories(ROOT.resolve(".runtime/evidence/boot-"+UUID.randomUUID()));
+            var properties=new Properties();properties.putAll(settings);
+            Path config=evidence.resolve("benchmark.properties");try(var writer=Files.newBufferedWriter(config)){properties.store(writer,"Boot benchmark; disposable disk writes");}
+            System.out.println("Boot timing evidence: "+evidence);
+            run(List.of(java("java"),"--enable-native-access=ALL-UNNAMED","-cp",CLASSES.toString(),"com.zhongbai233.mcandroidphone.core.BootBenchmark",config.toString(),evidence.toString()));return;
+        }
         if(mode.equals("quick")||mode.equals("runtime-smoke")) {
             compile();var base=List.of(java("java"),"--enable-native-access=ALL-UNNAMED","-cp",CLASSES.toString());
             if(mode.equals("quick"))for(String test:List.of("core.CoreSelfTest","phone.PhoneGeometrySelfTest","core.EnvironmentSelfTest","core.CameraChannelSelfTest","core.StorageBundleSelfTest","core.SharedSystemDiskSelfTest","core.QmpShutdownSelfTest","core.ManagedRuntimeSelfTest")){var command=new ArrayList<>(base);command.add("com.zhongbai233.mcandroidphone."+test);if(test.endsWith("ManagedRuntimeSelfTest"))command.add(ROOT.resolve(".runtime").toString());run(command);}
@@ -49,7 +56,7 @@ class Dev {
             if(!System.getProperty("os.name").startsWith("Mac"))throw new IllegalArgumentException("Use platform native probe instructions in docs/portable-validation.md");
             Path out=ROOT.resolve("build/native-probe/iosurface-probe");Files.createDirectories(out.getParent());run(List.of("xcrun","clang","-Wno-deprecated-declarations",ROOT.resolve("native/macos/iosurface_probe.m").toString(),"-framework","Foundation","-framework","Metal","-framework","IOSurface","-framework","OpenGL","-o",out.toString()));int result=new ProcessBuilder(out.toString()).inheritIO().start().waitFor();if(result==77)System.out.println("GPU capability unavailable on this host; no production zero-copy claim.");else if(result!=0)throw new IOException("Native probe failed: "+result);return;
         }
-        if(!Set.of("build","pattern","qemu","bios").contains(mode))throw new IllegalArgumentException("Mode: check, quick, build, pattern, qemu, bios, runtime-smoke, native-probe");
+        if(!Set.of("build","pattern","qemu","bios").contains(mode))throw new IllegalArgumentException("Mode: check, quick, build, pattern, qemu, bios, runtime-smoke, boot-benchmark, native-probe");
         var command=new ArrayList<String>(List.of(java("java"),"-cp",ROOT.resolve("gradle/wrapper/gradle-wrapper.jar").toString(),"org.gradle.wrapper.GradleWrapperMain"));command.add(mode.equals("build")?"build":"runClient");
         if(!mode.equals("build"))settings.putIfAbsent("backend",mode.equals("pattern")?"pattern":"qemu");
         if(mode.equals("bios")){settings.put("bios","true");settings.putIfAbsent("guestArch","amd64");settings.putIfAbsent("input","mouse");}

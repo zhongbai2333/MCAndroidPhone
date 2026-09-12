@@ -6,7 +6,7 @@ PRODUCT_MANUFACTURER := MCAndroidPhone
 PRODUCT_MODEL := Minecraft Android Phone
 PRODUCT_LOCALES := en_US zh_CN
 PRODUCT_PACKAGES += mcphone-environmentd MCPhoneCamera
-PRODUCT_VENDOR_PROPERTIES += ro.mcandroidphone.environment.version=1
+PRODUCT_VENDOR_PROPERTIES += ro.mcandroidphone.environment.version=1 ro.hardware.virtual_device=1
 # Product overlays outrank device overlays (including Lineage power-menu defaults).
 PRODUCT_PACKAGE_OVERLAYS := vendor/mcandroidphone/overlay $(PRODUCT_PACKAGE_OVERLAYS)
 # Keep WebView, installer, settings and the Go launcher from the inherited product.
