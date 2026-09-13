@@ -1,0 +1,54 @@
+{
+  "releaseId": 387794168,
+  "draft": true,
+  "assets": [
+    {
+      "name": "mcandroidphone-0.2.0-dev.20260913-universal.jar",
+      "bytes": 137143696,
+      "sha256": "c8607c7695a5527bd09f12846d7a8aac609d0ba78c3de4e0c3ae2b728c74c6c0",
+      "serverDigestVerified": true
+    },
+    {
+      "name": "mcandroidphone-0.2.0-dev.20260913-universal.jar.sha256",
+      "bytes": 114,
+      "sha256": "8cd483d1fc307b0d6c182320d254d9c82bafb975cdde2688162709f81181ec4f",
+      "serverDigestVerified": true
+    },
+    {
+      "name": "mcandroidphone-android-build-inputs-20260913.zip",
+      "bytes": 1189404,
+      "sha256": "8e86ffc728887ba5e6540ef0f3aa935a9414bc8e8bd741ce25f38a715768e655",
+      "serverDigestVerified": true
+    },
+    {
+      "name": "mcandroidphone-android-go-full-amd64-20260913.zip",
+      "bytes": 803309655,
+      "sha256": "55e8d0f23e2cb1552035e7c4b107db3f573fd32e47a6c937d80d453228c70ee7",
+      "serverDigestVerified": true
+    },
+    {
+      "name": "mcandroidphone-android-go-full-amd64-20260913.zip.sha256",
+      "bytes": 116,
+      "sha256": "ec1cb0cf6b77c8d6ff49a712c1b8c7afde275f5a73e53874c3ece36bf4759357",
+      "serverDigestVerified": true
+    },
+    {
+      "name": "mcandroidphone-android-go-full-arm64-20260913.zip",
+      "bytes": 683720715,
+      "sha256": "af7494135fe8c00f871dc70801a883ce25f657216b54caa6c5073d7f42acdde9",
+      "serverDigestVerified": true
+    },
+    {
+      "name": "mcandroidphone-android-go-full-arm64-20260913.zip.sha256",
+      "bytes": 116,
+      "sha256": "4c3a3b96690fc21b0d8e958772768ff032f3672c41fcea447beffe90f9415cda",
+      "serverDigestVerified": true
+    },
+    {
+      "name": "mcandroidphone-android-overlay-sources-20260913.zip",
+      "bytes": 75042,
+      "sha256": "b6c741cf439cdeb6cbb18a3afd7617242267bad5371aebeee6bdcf57b2d89916",
+      "serverDigestVerified": true
+    }
+  ]
+}

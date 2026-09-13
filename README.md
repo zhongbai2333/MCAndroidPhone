@@ -1,6 +1,6 @@
 # MCAndroidPhone
 
-**下载版与 Mac 接续开发：先读 [双架构下载版](docs/release-downloads.md)**。正在准备一个内置 Windows AMD64、macOS ARM64 原生运行时的通用 JAR；完整 Android Go 镜像保留 WebView，首次使用单独下载。最终产物与新 ARM64 镜像的 M4 实机验收仍在推进。
+**下载版与 Mac 接续开发：先读 [双架构下载版](docs/release-downloads.md)**。已构建一个内置 Windows AMD64、macOS ARM64 原生运行时的通用 JAR；完整 Android Go 镜像保留 WebView，首次使用单独下载。Windows 完整镜像、通用 JAR 启动及游戏回归已通过；新 ARM64 Go 镜像仍需 M4 实机验收。
 
 在 Minecraft 中使用真正运行的安卓手机。独立 NeoForge Mod，无需 NCPB、NetMusic 或 SceneEditor；目标为 Minecraft 26.1.2、NeoForge 26.1.2.76、Java 25。
 
@@ -12,7 +12,7 @@ M4 已通过 Android 16 / LineageOS ARM64 的真实启动、Java 触控和游戏
 
 游戏位置/姿态联动已完成第一阶段的真实 Android API 验证；正式 HAL 接入和双架构 Go 镜像构建配置已加入，完整定制系统尚待 Linux 编译。见 [联动实现与验收边界](docs/game-environment.md)、[镜像构建](android/image/README.md)。
 
-下载版版本为 `0.2.0-dev.20260913`，正在构建与验收；最终以 [GitHub Releases](https://github.com/zhongbai2333/MCAndroidPhone/releases) 的附件及说明为准。`v0.1.0-prototype` 是旧 Python 后端，不能代替新包测试。
+下载版版本为 `0.2.0-dev.20260913`；下载与测试边界以 [GitHub Releases](https://github.com/zhongbai2333/MCAndroidPhone/releases) 的附件及说明为准。`v0.1.0-prototype` 是旧 Python 后端，不能代替新包测试。
 
 ## 快速开始
 

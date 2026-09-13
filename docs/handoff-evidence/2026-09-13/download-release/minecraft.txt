@@ -1,0 +1,5 @@
+[12:46:29] [Render thread/INFO] [co.zh.mc.ph.PhoneVideoLayer/]: ANDROIDPHONE_GPU_FRAME: 720x1280 D3D11 shared texture; CPU pixel copies=0; GPU cache copies=1
+[12:47:21] [Render thread/INFO] [co.zh.mc.ph.AndroidPhoneWorldSmoke/]: ANDROIDPHONE_STOW_RESUME_OK: sameConnection=true sameEpoch=true inventorySlot=9 noRightClick=true drawn=41
+[12:47:24] [Render thread/INFO] [co.zh.mc.ph.AndroidPhoneWorldSmoke/]: ANDROIDPHONE_RESOURCE_RELOAD_OK: sameConnection=true cacheRetained=true
+[12:47:24] [Render thread/INFO] [co.zh.mc.ph.AndroidPhoneWorldSmoke/]: ANDROIDPHONE_WORLD_SMOKE_OK: world=mcandroidphone-smoke-f55b1042-3142-41f0-89be-7f5cb3a5e3a2 item=mcandroidphone:android_phone offhand=minecraft:stick bridgeConnected=true uploaded=159 drawn=1534 elapsedMs=127968 patternInputPosted=false screenshot=D:\UserFile\Documents\GitHub\MCAndroidPhone\.runtime\evidence\ed535b51-cead-4a83-b727-08afbcd15e44\phone.png
+BUILD SUCCESSFUL in 2m 32s

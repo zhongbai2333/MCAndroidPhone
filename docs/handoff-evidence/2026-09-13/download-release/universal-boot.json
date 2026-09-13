@@ -1,0 +1,11 @@
+{
+  "gpuRendered": false,
+  "storage": "persistent",
+  "runtimeReadyMs": 52172,
+  "firstTransportFrameMs": 129595,
+  "bootCompletedMs": 133366,
+  "frames": 30,
+  "bootCompleted": true,
+  "finalState": "STOPPED",
+  "shutdownOutcome": "guest-confirmed"
+}

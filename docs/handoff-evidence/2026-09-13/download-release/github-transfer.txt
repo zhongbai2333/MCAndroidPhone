@@ -1,0 +1,3 @@
+Full 803309655-byte AMD64 archive fetched through the GitHub draft asset API, followed by production Mod archive/disk hashes and XZ decode. PASS.
+Total transfer+install time: 722516 ms. Authentication restricted to api.github.com; token not retained.
+Public URL anonymous resumed-transfer check is recorded after publication.

@@ -1,0 +1,176 @@
+{
+  "arch": "amd64",
+  "inputBytes": 2163605504,
+  "inputSha256": "f868f53f91bdf221765aa1baa5676f4c4a8029dce38827abae7abf2e0d081186",
+  "compressionParallelJobs": 2,
+  "threadsPerCompressor": 2,
+  "timingScope": "Linux native tools, one serial decode+SHA256 pass; not Mod/Java or Android boot timing",
+  "versions": {
+    "xz": "xz (XZ Utils) 5.4.5",
+    "zstd": "*** Zstandard CLI (64-bit) v1.5.5, by Yann Collet ***"
+  },
+  "results": [
+    {
+      "name": "existing-xz",
+      "path": "vda.qcow2.xz",
+      "bytes": 803300256,
+      "decoder": [
+        "xz",
+        "-dc"
+      ],
+      "currentModCodecCompatible": true,
+      "decompression": {
+        "wallSeconds": 33.29,
+        "userSeconds": 28.53,
+        "systemSeconds": 4.57,
+        "maxRssKiB": 50944
+      },
+      "decodeAndHashSeconds": 33.293,
+      "sha256Verified": true,
+      "savedBytesVsBaseline": 0
+    },
+    {
+      "name": "zstd-19-long27",
+      "path": "zstd-19-long27.zst",
+      "bytes": 827922478,
+      "compression": {
+        "wallSeconds": 373.1,
+        "userSeconds": 736.72,
+        "systemSeconds": 2.32,
+        "maxRssKiB": 629504
+      },
+      "compressCommand": [
+        "zstd",
+        "-q",
+        "-T2",
+        "--ultra",
+        "-19",
+        "--long=27",
+        "-c"
+      ],
+      "decoder": [
+        "zstd",
+        "-q",
+        "-d",
+        "-c",
+        "--memory=256MB"
+      ],
+      "currentModCodecCompatible": false,
+      "decompression": {
+        "wallSeconds": 2.82,
+        "userSeconds": 2.19,
+        "systemSeconds": 1.73,
+        "maxRssKiB": 135424
+      },
+      "decodeAndHashSeconds": 2.826,
+      "sha256Verified": true,
+      "savedBytesVsBaseline": -24622222
+    },
+    {
+      "name": "xz-extreme-48MiB",
+      "path": "xz-extreme-48MiB.xz",
+      "bytes": 803305460,
+      "compression": {
+        "wallSeconds": 462.56,
+        "userSeconds": 905.74,
+        "systemSeconds": 2.51,
+        "maxRssKiB": 1658880
+      },
+      "compressCommand": [
+        "xz",
+        "-T2",
+        "--memlimit-compress=6GiB",
+        "--no-adjust",
+        "--x86",
+        "--lzma2=preset=6e,dict=48MiB",
+        "-c"
+      ],
+      "decoder": [
+        "xz",
+        "-dc"
+      ],
+      "currentModCodecCompatible": true,
+      "decompression": {
+        "wallSeconds": 33.25,
+        "userSeconds": 28.31,
+        "systemSeconds": 4.77,
+        "maxRssKiB": 51200
+      },
+      "decodeAndHashSeconds": 33.26,
+      "sha256Verified": true,
+      "savedBytesVsBaseline": -5204
+    },
+    {
+      "name": "zstd-22-long27",
+      "path": "zstd-22-long27.zst",
+      "bytes": 809471812,
+      "compression": {
+        "wallSeconds": 589.07,
+        "userSeconds": 1110.84,
+        "systemSeconds": 5.25,
+        "maxRssKiB": 4063744
+      },
+      "compressCommand": [
+        "zstd",
+        "-q",
+        "-T2",
+        "--ultra",
+        "-22",
+        "--long=27",
+        "-c"
+      ],
+      "decoder": [
+        "zstd",
+        "-q",
+        "-d",
+        "-c",
+        "--memory=256MB"
+      ],
+      "currentModCodecCompatible": false,
+      "decompression": {
+        "wallSeconds": 2.83,
+        "userSeconds": 2.33,
+        "systemSeconds": 1.12,
+        "maxRssKiB": 135424
+      },
+      "decodeAndHashSeconds": 2.837,
+      "sha256Verified": true,
+      "savedBytesVsBaseline": -6171556
+    },
+    {
+      "name": "xz-extreme-128MiB",
+      "path": "xz-extreme-128MiB.xz",
+      "bytes": 777159692,
+      "compression": {
+        "wallSeconds": 580.77,
+        "userSeconds": 1069.53,
+        "systemSeconds": 5.28,
+        "maxRssKiB": 4131840
+      },
+      "compressCommand": [
+        "xz",
+        "-T2",
+        "--memlimit-compress=6GiB",
+        "--no-adjust",
+        "--x86",
+        "--lzma2=preset=6e,dict=128MiB",
+        "-c"
+      ],
+      "decoder": [
+        "xz",
+        "-dc"
+      ],
+      "currentModCodecCompatible": false,
+      "decompression": {
+        "wallSeconds": 31.93,
+        "userSeconds": 27.37,
+        "systemSeconds": 4.38,
+        "maxRssKiB": 133120
+      },
+      "decodeAndHashSeconds": 31.937,
+      "sha256Verified": true,
+      "savedBytesVsBaseline": 26140564
+    }
+  ],
+  "complete": true
+}

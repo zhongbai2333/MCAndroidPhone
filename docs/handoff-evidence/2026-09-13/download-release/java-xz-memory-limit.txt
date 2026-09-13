@@ -1,0 +1,6 @@
+Exception in thread "main" org.tukaani.xz.MemoryLimitException: 131181 KiB of memory would be needed; limit was 65536 KiB
+	at org.tukaani.xz.BlockInputStream.<init>(BlockInputStream.java:186)
+	at org.tukaani.xz.SingleXZInputStream.read(SingleXZInputStream.java:412)
+	at org.tukaani.xz.XZInputStream.read(XZInputStream.java:394)
+	at java.base/java.io.InputStream.read(InputStream.java:222)
+	at VerifyImageXZ.main(VerifyImageXZ.java:27)
