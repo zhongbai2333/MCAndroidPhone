@@ -11,3 +11,11 @@
 后续验收必须包括：完整镜像构建；真实 ARM64 JNI 应用安装/运行；重启后仍可用；GLES/Vulkan、WebView、音视频和严格 SELinux 下的表现。Digitalis 上游使用 goldfish / ANGLE / gfxstream，我们使用 virtio / Mesa / VirGL，不能直接继承上游图形兼容声明，也不能只设置 ABI 属性就宣传 ARM64 应用已兼容。本方案只针对 ARM64，不含 32 位 ARM 转译。
 
 当前发行镜像保持已验证的 full 基线；转译镜像通过实际验收后再进入官方目录。
+
+## 本机编译进展（2026-09-13）
+
+首次完整图分析触及 22 GiB 内存 / 5 GiB swap 限制，系统以 OOM 终止；不是 C++ 编译错误。对已经配置好的同一产品运行 `bounded-graph.sh`，使用 Go `GOGC=25`、`GOMEMLIMIT=18GiB` 后，构建图成功生成。此工具要求当前 `out/soong` 中已有本产品的变量和环境文件，不替代首次产品配置。
+
+随后 `MCANDROIDPHONE_REUSE_GRAPH=true LINEAGE_ROOT=... bash android/native-bridge/build-probe.sh` 直接构建已解析的两个 Android x86_64 输出目标，544 步在约 42 秒完成，转译库与 runner 均成功。systemd 报告的极小 MemoryPeak 未覆盖该阶段全部子进程，不作为实际内存需求结论。
+
+完整镜像装配已启动，使用原树、已有输出和 12 路；对本版本 Soong，经检查 `config.go` 后采用 `m --skip-config --config-only --no-soong-only -j 12 vm-utm-zip`，复用已确认的图但执行 Kati 和镜像构建。这是当前源码版本的恢复办法，**不要在源码/产品配置改变后直接跳过图生成**。原始 full 镜像已独立保存，构建输出不等于发布完成。

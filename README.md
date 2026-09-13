@@ -10,9 +10,11 @@ M4 Mac mini 从 [迁移与验收步骤](docs/mac-handoff.md) 开始；实测范�
 
 M4 已通过 Android 16 / LineageOS ARM64 的真实启动、Java 触控和游戏内滑动解锁、桌面显示测试，见 [Android 实测记录](docs/android-arm64-validation.md) 与 [匹配镜像的配置模板](configs/mac-lineage-arm64.properties.example)。
 
-游戏位置/姿态联动已完成第一阶段的真实 Android API 验证；正式 HAL 接入和双架构 Go 镜像构建配置已加入，完整定制系统尚待 Linux 编译。见 [联动实现与验收边界](docs/game-environment.md)、[镜像构建](android/image/README.md)。
+游戏位置/姿态联动已完成第一阶段的真实 Android API 验证；正式 HAL 接入和双架构 Go 镜像构建配置已加入，AMD64 与 ARM64 full 定制系统均已完成构建。见 [联动实现与验收边界](docs/game-environment.md)、[镜像构建](android/image/README.md)。
 
-下载版版本为 `0.2.0-dev.20260913`；下载与测试边界以 [GitHub Releases](https://github.com/zhongbai2333/MCAndroidPhone/releases) 的附件及说明为准。`v0.1.0-prototype` 是旧 Python 后端，不能代替新包测试。
+下载版版本为 `0.2.1-dev.20260913`；下载与测试边界以 [GitHub Releases](https://github.com/zhongbai2333/MCAndroidPhone/releases) 的附件及说明为准。`v0.1.0-prototype` 是旧 Python 后端，不能代替新包测试。
+
+在游戏“选项”中点击“安卓镜像…”可下载官方镜像、导入自己的兼容镜像，并选择新手机使用的系统。新下载版使用 zstd，旧 XZ 仍受支持。详见 [镜像管理](docs/image-manager.md)。AMD64 的 ARM64 应用转译正在独立验证，当前官方镜像尚未预装。
 
 ## 快速开始
 

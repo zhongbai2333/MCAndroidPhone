@@ -1,0 +1,20 @@
+[
+  {
+    "arch": "amd64",
+    "url": "https://github.com/zhongbai2333/MCAndroidPhone/releases/download/v0.2.1-dev.20260913/mcandroidphone-android-go-full-amd64-zstd-20260913.zip",
+    "anonymous": true,
+    "status": 206,
+    "contentRange": "bytes 0-65535/809481872",
+    "matchesVerifiedLocalArchive": true,
+    "scope": "first 64 KiB only; complete asset SHA256 separately matched server digest"
+  },
+  {
+    "arch": "arm64",
+    "url": "https://github.com/zhongbai2333/MCAndroidPhone/releases/download/v0.2.1-dev.20260913/mcandroidphone-android-go-full-arm64-zstd-20260913.zip",
+    "anonymous": true,
+    "status": 206,
+    "contentRange": "bytes 0-65535/730598450",
+    "matchesVerifiedLocalArchive": true,
+    "scope": "first 64 KiB only; complete asset SHA256 separately matched server digest"
+  }
+]

@@ -1,0 +1,38 @@
+[
+  {
+    "name": "mcandroidphone-0.2.1-dev.20260913-universal.jar",
+    "bytes": 143619752,
+    "sha256": "95a65bac4e28ede954ff3d48008d8d42bc4dad7d3a295e3a94d24f6d807a050a",
+    "serverDigestMatches": true
+  },
+  {
+    "name": "mcandroidphone-0.2.1-dev.20260913-universal.jar.sha256",
+    "bytes": 114,
+    "sha256": "42becbcd27e04123bf4575332dbddcee3fbae401bb11791ebfc8a201b7aa1996",
+    "serverDigestMatches": true
+  },
+  {
+    "name": "mcandroidphone-android-go-full-amd64-zstd-20260913.zip",
+    "bytes": 809481872,
+    "sha256": "5bc69c09b04253016cd1dc6072d54dafdaff25c61b876c3526c87ebce1b83515",
+    "serverDigestMatches": true
+  },
+  {
+    "name": "mcandroidphone-android-go-full-amd64-zstd-20260913.zip.sha256",
+    "bytes": 121,
+    "sha256": "9d068640811ff7b93ab849bca441b8eb11e94cce8b16a38e0021a725ca526539",
+    "serverDigestMatches": true
+  },
+  {
+    "name": "mcandroidphone-android-go-full-arm64-zstd-20260913.zip",
+    "bytes": 730598450,
+    "sha256": "2cc61e0858335f7b6741886bc37f8cb040310e60567b1590bd6ebf0fa53556a6",
+    "serverDigestMatches": true
+  },
+  {
+    "name": "mcandroidphone-android-go-full-arm64-zstd-20260913.zip.sha256",
+    "bytes": 121,
+    "sha256": "7b3971ae59f25d8e916b33bea170cc7179a79c15c3aa3879bcb64a50859194c4",
+    "serverDigestMatches": true
+  }
+]

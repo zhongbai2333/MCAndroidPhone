@@ -1,0 +1,38 @@
+{
+  "date": "2026-09-13",
+  "codeCommit": "57f7c8ee2b4260eb473073a2debb0d8ebb0212f3",
+  "ciCommit": "8351fff1c56bb2c2a597601c27b593b19585b642",
+  "ciRun": 34742375552,
+  "ciAllJobs": "success",
+  "artifacts": [
+    {
+      "name": "mcandroidphone-0.2.1-dev.20260913-universal.jar",
+      "bytes": 143619752,
+      "sha256": "95a65bac4e28ede954ff3d48008d8d42bc4dad7d3a295e3a94d24f6d807a050a"
+    },
+    {
+      "name": "mcandroidphone-android-go-full-amd64-zstd-20260913.zip",
+      "bytes": 809481872,
+      "sha256": "5bc69c09b04253016cd1dc6072d54dafdaff25c61b876c3526c87ebce1b83515"
+    },
+    {
+      "name": "mcandroidphone-android-go-full-arm64-zstd-20260913.zip",
+      "bytes": 730598450,
+      "sha256": "2cc61e0858335f7b6741886bc37f8cb040310e60567b1590bd6ebf0fa53556a6"
+    }
+  ],
+  "windowsRealImageCodec": {
+    "amd64": {
+      "decodedBytes": 2163605504,
+      "decodeAndHashMs": 2970
+    },
+    "arm64": {
+      "decodedBytes": 1915813888,
+      "decodeAndHashMs": 2614
+    }
+  },
+  "codecTimingScope": "Windows Java 25, private codec from built Mod JAR, full output SHA256, no output disk write; not download/install/Android boot time",
+  "universalInstall": "fresh native+image cache, verified local archive preseeded, production installer success",
+  "uiSmoke": "actual Minecraft settings entry/catalog/import screenshots; all widgets within viewport",
+  "nativeBridge": "experimental build probe only; not preinstalled in release images"
+}

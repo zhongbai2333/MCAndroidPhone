@@ -1,5 +1,7 @@
 # Mac mini M4 交接
 
+2026-09-13 镜像管理更新：0.2.1 已加入 zstd 及“选项 → 安卓镜像…”；Windows、Linux、macOS CI 的私有原生解码和镜像库测试通过。M4 仍需验证完整 Go ARM64 安卓启动和交互，不能将解码 CI 当作 HVF/图形验收。见 [镜像管理](image-manager.md)。
+
 2026-09-13 新增：现在可以通过一个通用 JAR 加两套独立 Android Go 下载包接续开发。M4 可以复用发布包的 QEMU 和镜像，无需保持 Windows 开机或同步整个 Android 源码；步骤及本轮尚待验收项目见 [双架构下载版](release-downloads.md)。以下记录仍用于区分此前社区镜像的实测结果。
 
 M4 Mac mini 已通过 Java 核心/生命周期、完整构建、图案和固件测试，并完成 Android 16 / LineageOS ARM64 的启动、触控及游戏内滑动解锁、桌面显示、收纳和资源重载，详见 [真实 Android 验收](android-arm64-validation.md)。Mac 默认走 VNC → Java → FFmpeg → NV12 → OpenGL 的 CPU 路径；IOSurface 同进程探针已通过，但 QEMU 的 IOSurface 跨进程后端尚未实现。
@@ -22,7 +24,7 @@ sh test-phone.sh native-probe
 
 ## 无需 Gradle 的预览版
 
-新的通用下载版见 [开发版 Release](https://github.com/zhongbai2333/MCAndroidPhone/releases/tag/v0.2.0-dev.20260913)。发布 JAR 可放入已安装的 Minecraft 26.1.2 / NeoForge 26.1.2.76；本地 `sh gradlew build` 仍输出不内置平台运行时的裸 JAR。它复用游戏的 Java 25；测试图只需 `backend=pattern`。此前 GitHub 预览版仍是旧 Python 实现，不能用来验收移除 Python 依赖。
+新的通用下载版见 [开发版 Release](https://github.com/zhongbai2333/MCAndroidPhone/releases/tag/v0.2.1-dev.20260913)。发布 JAR 可放入已安装的 Minecraft 26.1.2 / NeoForge 26.1.2.76；本地 `sh gradlew build` 仍输出不内置平台运行时的裸 JAR。它复用游戏的 Java 25；测试图只需 `backend=pattern`。此前 GitHub 预览版仍是旧 Python 实现，不能用来验收移除 Python 依赖。
 
 此前 CI 干净环境受 NeoForge 依赖元数据端点 HTTP 502 阻断。本次 M4 本机已完成 Gradle 构建，使用了已有的部分依赖缓存；该段描述历史状态；2026-09-13 新代码的三平台核心检查与远端完整 Mod 构建已通过。`quick` 和安装好的游戏使用预览版 JAR 不依赖这个构建端点。[详细验证记录](portable-validation.md)
 
