@@ -25,3 +25,5 @@ local.properties
 !src/main/resources/mcandroidphone/runtime/
 src/main/resources/mcandroidphone/runtime/*
 !src/main/resources/mcandroidphone/runtime/XZ-NOTICE.txt
+
+!src/main/resources/mcandroidphone/runtime/ZSTD*.txt

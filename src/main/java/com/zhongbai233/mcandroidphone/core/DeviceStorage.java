@@ -41,6 +41,9 @@ final class DeviceStorage implements AutoCloseable {
                 try {
                     var info=new Properties();info.setProperty("guestArch",config.guest());info.setProperty("schema",overlay?"2":"1");
                     if(overlay)info.setProperty("diskBacking",base);
+                    if(!config.get("imageId","").isEmpty())for(String key:List.of("imageId","guestArch","width","height","density","memory","cpus","cpuModel","shutdownMethod","diskFormat","dataDiskFormat","firmwareVarsFormat")) {
+                        String value=config.get(key,"");if(!value.isEmpty())info.setProperty("imageConfig."+key,value);
+                    }
                     for(var entry:sources.entrySet()) {
                         String key=entry.getKey(),format=config.get(key.equals("disk")?"diskFormat":key.equals("dataDisk")?"dataDiskFormat":"firmwareVarsFormat",key.equals("firmwareVars")?"raw":"qcow2");
                         if(!Set.of("raw","qcow2").contains(format))throw new IOException("Invalid media format");

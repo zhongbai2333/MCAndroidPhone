@@ -37,6 +37,13 @@ jobs:
           distribution: temurin
           java-version: '25'
       - run: java scripts/Dev.java check
+      - name: Private zstd decoder and local image library on this host
+        shell: bash
+        run: |
+          mkdir -p build/portable-classes/mcandroidphone/runtime
+          curl --fail --location --retry 3 https://repo.maven.apache.org/maven2/com/github/luben/zstd-jni/1.5.7-16/zstd-jni-1.5.7-16.jar -o build/portable-classes/mcandroidphone/runtime/zstd-codec.jar
+          java --enable-native-access=ALL-UNNAMED -cp build/portable-classes com.zhongbai233.mcandroidphone.core.ZstdBundleSelfTest
+          java --enable-native-access=ALL-UNNAMED -cp build/portable-classes com.zhongbai233.mcandroidphone.core.AndroidImageLibrarySelfTest
       - name: Reproducible runtime package and cache identity
         run: java scripts/PackageRuntimeSelfTest.java
       - name: Universal runtime package isolation
@@ -87,7 +94,7 @@ jobs:
           done
           exit 1
       - name: Verify compressed runtime packaging
-        run: java scripts/PackageRuntimeXZSelfTest.java build/libs/mcandroidphone-0.2.0-dev.20260913.jar
+        run: java scripts/PackageRuntimeXZSelfTest.java build/libs/mcandroidphone-0.2.1-dev.20260913.jar
       - uses: actions/upload-artifact@v4
         with:
           name: mcandroidphone-jar

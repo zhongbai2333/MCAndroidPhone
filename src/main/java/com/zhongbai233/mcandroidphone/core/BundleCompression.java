@@ -45,6 +45,9 @@ public final class BundleCompression {
         };
         return codec;
     }
+    public static InputStream decode(String format,InputStream input)throws IOException {
+        return switch(format){case "none"->input;case "xz"->decode(input);case "zstd"->ZstdCompression.decode(input);default->throw new IOException("Unsupported compression: "+format);};
+    }
     /** Memory is capped at 64 MiB even if the compressed stream requests a larger dictionary. */
     public static InputStream decode(InputStream input)throws IOException {
         try{return (InputStream)codec().loadClass("org.tukaani.xz.XZInputStream")

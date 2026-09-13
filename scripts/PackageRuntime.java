@@ -11,8 +11,8 @@ class PackageRuntime {
         var checksum=new CRC32();var digest=MessageDigest.getInstance("SHA-256");
         try(var loader=new java.net.URLClassLoader(new java.net.URL[]{base.toUri().toURL()},ClassLoader.getPlatformClassLoader());
             var raw=new DigestInputStream(new CheckedInputStream(Files.newInputStream(source),checksum),digest)) {
-            var method=loader.loadClass("com.zhongbai233.mcandroidphone.core.BundleCompression").getMethod("decode",InputStream.class);
-            try(var input=(InputStream)method.invoke(null,raw)) {
+            var method=loader.loadClass("com.zhongbai233.mcandroidphone.core.BundleCompression").getMethod("decode",String.class,InputStream.class);
+            try(var input=(InputStream)method.invoke(null,source.toString().endsWith(".zst")?"zstd":"xz",raw)) {
                 var decoded=MessageDigest.getInstance("SHA-256");byte[] buffer=new byte[1024*1024];long count=0;int n;
                 while((n=input.read(buffer))!=-1){count+=n;if(count>expectedSize)throw new IOException("XZ exceeds staged file size");decoded.update(buffer,0,n);}
                 if(count!=expectedSize||!HexFormat.of().formatHex(decoded.digest()).equals(expectedHash))throw new IOException("XZ does not match staged original: "+source);

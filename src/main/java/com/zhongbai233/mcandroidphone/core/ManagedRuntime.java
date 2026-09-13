@@ -207,7 +207,7 @@ public final class ManagedRuntime implements AutoCloseable {
             Properties embedded=RuntimeBundle.install(gameDirectory,name->ManagedRuntime.class.getResourceAsStream(name),this::cancelled);
             if(embedded.getProperty("disk","").isBlank()) {
                 String arch=RuntimeConfig.arch(p.getProperty("guestArch",embedded.getProperty("guestArch",System.getProperty("os.arch"))));
-                Properties images=RemoteAndroidImages.install(gameDirectory,arch,name->ManagedRuntime.class.getResourceAsStream(name),this::cancelled,text->{cancelled();message=text;});
+                Properties images=AndroidImageLibrary.forDevice(gameDirectory,arch,p.getProperty("deviceId",""),this::cancelled,text->{cancelled();message=text;});
                 images.remove("root");embedded.putAll(images);
             }
             for(String key:embedded.stringPropertyNames())p.putIfAbsent(key,embedded.getProperty(key));

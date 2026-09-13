@@ -53,8 +53,8 @@ final class RuntimeBundle {
             String compression=manifest.getProperty(key+"compression","none");
             long storedSize=Long.parseLong(manifest.getProperty(key+"storedSize",""+size));
             String storedHash=manifest.getProperty(key+"storedSha256",hash);
-            if(!Set.of("none","xz").contains(compression)||storedSize<0||storedSize>32L*1024*1024*1024||!storedHash.matches("[0-9a-f]{64}"))throw new IOException("Invalid bundle encoding");
-            if(compression.equals("xz")&&!manifest.getProperty("schema").equals("2"))throw new IOException("Compressed entry requires schema 2");
+            if(!Set.of("none","xz","zstd").contains(compression)||storedSize<0||storedSize>32L*1024*1024*1024||!storedHash.matches("[0-9a-f]{64}"))throw new IOException("Invalid bundle encoding");
+            if(!compression.equals("none")&&!manifest.getProperty("schema").equals("2"))throw new IOException("Compressed entry requires schema 2");
             if(compression.equals("none")&&(storedSize!=size||!storedHash.equals(hash)))throw new IOException("Identity encoding metadata mismatch");
             entries.add(new Entry(name,size,hash,exec.equals("true"),compression,storedSize,storedHash));
         }
@@ -72,7 +72,7 @@ final class RuntimeBundle {
                             try(var raw=resources.apply(prefix+"files/"+entry.path);var output=Files.newOutputStream(file,StandardOpenOption.CREATE_NEW)) {
                                 if(raw==null)throw new IOException("Missing bundled file: "+entry.path);
                                 var stored=new StoredInput(raw,entry.storedSize,cancelled);
-                                try(var input=entry.compression.equals("xz")?BundleCompression.decode(stored):stored) {
+                                try(var input=BundleCompression.decode(entry.compression,stored)) {
                                     var hash=digest();byte[] buffer=new byte[1024*1024];long size=0;int n;
                                     while((n=input.read(buffer))!=-1){cancelled.run();size+=n;if(size>entry.size)throw new IOException("Bundle file exceeds declared size");hash.update(buffer,0,n);output.write(buffer,0,n);}
                                     if(size!=entry.size||!HexFormat.of().formatHex(hash.digest()).equals(entry.hash))throw new IOException("Bundled file integrity check failed: "+entry.path);

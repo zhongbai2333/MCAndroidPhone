@@ -62,6 +62,8 @@ public final class AndroidPhoneAdapter {
         modBus.addListener(AndroidPhoneAdapter::registerKeys);
         modBus.addListener(PhoneRenderTypes::register);
         modBus.addListener(AndroidPhoneAdapter::registerReload);
+        NeoForge.EVENT_BUS.addListener(AndroidImageManagerScreen::optionsButton);
+        NeoForge.EVENT_BUS.addListener(AndroidImageManagerScreen::smokeTick);
         NeoForge.EVENT_BUS.addListener(AndroidPhoneAdapter::commands);
         NeoForge.EVENT_BUS.addListener(AndroidPhoneAdapter::tick);
         NeoForge.EVENT_BUS.addListener(AndroidPhoneAdapter::mouseDown);
@@ -375,6 +377,7 @@ public final class AndroidPhoneAdapter {
         PhoneCamera.close();
         if(runtime!=null) {runtime.close();runtime=null;}
     }
+    static boolean imageManagementBlocked(){return runtime!=null && runtime.state()!=ManagedRuntime.State.STOPPED && runtime.state()!=ManagedRuntime.State.FAILED;}
     static boolean managedRuntimeActive(){return runtime!=null && runtime.state()==ManagedRuntime.State.READY;}
 
     private static void stop() {

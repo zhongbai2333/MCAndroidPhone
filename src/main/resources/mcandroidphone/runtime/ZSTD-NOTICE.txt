@@ -1,0 +1,9 @@
+zstd-jni 1.5.7-16, com.github.luben:zstd-jni.
+Source: https://github.com/luben/zstd-jni
+Artifact: https://repo.maven.apache.org/maven2/com/github/luben/zstd-jni/1.5.7-16/
+JAR SHA-256: d84360d39f57a40dc1e26ea2d4bb66da0cb88057ba117edae67431a719057edc
+JNI bindings: BSD 2-Clause; bundled Zstandard: BSD 3-Clause (chosen license).
+See ZSTD-JNI-LICENSE.txt and ZSTD-LICENSE.txt for copyright and terms.
+Loaded privately without class relocation. The upstream JAR embeds native libraries
+for Windows AMD64/ARM64, macOS Intel/ARM64, and Linux AMD64/ARM64, among others.
+Decoder window capped at 128 MiB. Native host availability is not a claim of QEMU/GPU support.

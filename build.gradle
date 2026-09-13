@@ -4,11 +4,11 @@ plugins {
 }
 base { archivesName = 'mcandroidphone' }
 group = 'com.zhongbai233.mcandroidphone'
-version = '0.2.0-dev.20260913'
+version = '0.2.1-dev.20260913'
 repositories { mavenCentral() }
 // Private resource, not a shared Minecraft dependency or a second runtime installation.
-configurations { xzCodec { transitive = false } }
-dependencies { xzCodec 'org.tukaani:xz:1.12' }
+configurations { xzCodec { transitive = false }; zstdCodec { transitive = false } }
+dependencies { xzCodec 'org.tukaani:xz:1.12'; zstdCodec 'com.github.luben:zstd-jni:1.5.7-16' }
 java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
 neoForge {
@@ -23,6 +23,8 @@ neoForge {
             if (System.getProperty('os.name').startsWith('Mac')) jvmArgument '-XstartOnFirstThread'
             gameDirectory = rootProject.file('run')
             jvmArgument '--enable-native-access=ALL-UNNAMED,mcandroidphone'
+            systemProperty 'mcandroidphone.imageManagerSmoke', providers.gradleProperty('imageManagerSmoke').getOrElse('false')
+            systemProperty 'mcandroidphone.imageManagerSmokeOutput', rootProject.file(providers.gradleProperty('imageManagerSmokeOutput').getOrElse('.runtime/evidence/image-manager-ui-20260913')).absolutePath
             systemProperty 'mcandroidphone.smokeWarmupSeconds', providers.gradleProperty('phoneSmokeWarmupSeconds').getOrElse('0')
             systemProperty 'mcandroidphone.smoke', providers.gradleProperty('phoneSmoke').getOrElse('false')
             systemProperty 'mcandroidphone.worldSmoke', providers.gradleProperty('phoneWorldSmoke').getOrElse('false')
@@ -101,6 +103,10 @@ tasks.register('nativeGuardBundle', Jar) {
 }
 tasks.named('processResources') {
     dependsOn nativeGuardBundle
+    from(configurations.zstdCodec) {
+        into 'mcandroidphone/runtime'
+        rename { 'zstd-codec.jar' }
+    }
     from(configurations.xzCodec) {
         into 'mcandroidphone/runtime'
         rename { 'xz-codec.jar' }
@@ -148,3 +154,13 @@ tasks.register('remoteAndroidImagesSelfTest', JavaExec) {
     mainClass = 'com.zhongbai233.mcandroidphone.core.RemoteAndroidImagesSelfTest'
 }
 tasks.named('check') { dependsOn 'remoteAndroidImagesSelfTest' }
+
+['zstdBundleSelfTest': 'ZstdBundleSelfTest', 'androidImageLibrarySelfTest': 'AndroidImageLibrarySelfTest'].each { taskName, testClass ->
+    tasks.register(taskName, JavaExec) {
+        dependsOn testClasses, processResources
+        classpath = files(sourceSets.main.output, sourceSets.test.output)
+        mainClass = 'com.zhongbai233.mcandroidphone.core.' + testClass
+        jvmArgs '--enable-native-access=ALL-UNNAMED'
+    }
+    tasks.named('check') { dependsOn taskName }
+}

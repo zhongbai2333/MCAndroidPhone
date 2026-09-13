@@ -22,6 +22,9 @@ final class RemoteAndroidImages {
             if(in==null)return new Properties();bytes=in.readNBytes(65537);
             if(bytes.length>65536)throw new IOException("Image descriptor too large");
         }
+        return installDescriptor(game,arch,bytes,cancelled,status,testHttp,token,null);
+    }
+    static Properties installDescriptor(Path game,String arch,byte[] bytes,Runnable cancelled,Consumer<String> status,boolean testHttp,Supplier<String> token,Path local)throws IOException {
         var descriptor=new Properties();descriptor.load(new ByteArrayInputStream(bytes));
         if(!descriptor.getProperty("platform","").equals("android-"+arch)||!descriptor.getProperty("config.guestArch","").equals(arch)||!descriptor.getProperty("files","").equals("3"))throw new IOException("Image descriptor architecture/files mismatch");
         URI url;long length;
@@ -51,10 +54,11 @@ final class RemoteAndroidImages {
             if(name.equals(prefix+"manifest.properties"))return new ByteArrayInputStream(bytes);
             String entry=mapping.get(name);if(entry==null)return null;
             try {
+                if(local!=null&&Files.isDirectory(local))return Files.newInputStream(RuntimeBundle.safePath(local,entry));
                 if(zip[0]==null) {
-                    Path archive=download(game,arch,url,length,hash,decodedBytes,cancelled,status,testHttp,token);
+                    Path archive=local!=null?local:download(game,arch,url,length,hash,decodedBytes,cancelled,status,testHttp,token);
                     zip[0]=new ZipFile(archive.toFile());var seen=new HashSet<String>();
-                    for(var z:zip[0].stream().toList())if(z.isDirectory()||!seen.add(z.getName())||!archiveNames.contains(z.getName())&&!Set.of("README.txt","SHA256SUMS").contains(z.getName()))throw new IOException("Unexpected image ZIP entry");
+                    for(var z:zip[0].stream().toList())if(z.isDirectory()||!seen.add(z.getName())||!archiveNames.contains(z.getName())&&!Set.of("README.txt","SHA256SUMS","manifest.properties").contains(z.getName()))throw new IOException("Unexpected image ZIP entry");
                     if(!seen.containsAll(archiveNames))throw new IOException("Missing image ZIP entries");
                     status.accept("正在校验并解压安卓镜像…");
                 }
