@@ -6,7 +6,9 @@
 
 ## 安装与配置
 
-普通构建 `build/libs/mcandroidphone-0.1.0-prototype.jar` 配合匹配的 NeoForge，需准备 QEMU、FFmpeg、Android 镜像等依赖。平台内置包另外包含对应架构的原生依赖、固件和 Android 媒体；未显式配置 disk/iso/kernel 时，Java 自动校验并解压到 `<游戏目录>/mcandroidphone/bundles/<平台>-<清单SHA256>/`。两种包都不要求开发仓库、Gradle、scripts 或 Python。制作与验收见 [本机功能验收](local-features.md)。
+普通构建 `build/libs/mcandroidphone-0.2.0-dev.20260913.jar` 配合匹配的 NeoForge，需准备 QEMU、FFmpeg、Android 镜像等依赖。平台内置包另外包含对应架构的原生依赖、固件和 Android 媒体；未显式配置 disk/iso/kernel 时，Java 自动校验并解压到 `<游戏目录>/mcandroidphone/bundles/<平台>-<清单SHA256>/`。两种包都不要求开发仓库、Gradle、scripts 或 Python。制作与验收见 [本机功能验收](local-features.md)。
+
+下载版将 Android 媒体放在独立 Release 附件，JAR 仅内置原生程序及固定版本的镜像下载清单。未显式配置媒体时，先选择宿主对应运行时，再下载对应架构镜像。下载显示百分比和字节数，支持续传，核对归档及解码后三盘的 SHA-256；完整已安装缓存可离线复用。归档在 `mcandroidphone/downloads/`，镜像模板在 `mcandroidphone/images/`；用户设备数据仍独立保存在 `devices/`。不会随 Mod 升级自动迁移已有手机。制作和 Mac 开发接续见 [双架构下载版](release-downloads.md)。
 
 游戏手机默认持久保存：新手机把系统模板固定为 `mcandroidphone/devices/.bases/<SHA256>.<格式>` 中的共享底盘，在 `<物品UUID>/` 中创建初始 256 KiB 的 qcow2 系统差分盘；用户盘和 EFI 变量继续各自复制。底盘首次独立复制一次，之后同一模板复用，运行中的写入只进入手机差分盘。差分盘随系统写入增长，用户安装应用及照片仍占用用户盘空间。已有完整磁盘保持原样；升级不会自动替换底盘或迁移数据。一个 UUID 同时只允许一个写入实例。
 
@@ -68,7 +70,7 @@ cpus=2
 | `width`、`height`、`density` | 宽高通过 virtio 显示的 EDID 请求，实际尺寸由来宾决定；density 仅写入自动生成的 Android-x86 内核参数，磁盘引导的系统需使用镜像默认值或在来宾中设置显示密度 |
 | `colorOrder` | rgb 或 bgr；默认匹配 ARM/固件及 Android-x86 的原有策略 |
 
-旧配置中的 `python` 已无作用，可以删除。QEMU 的 DLL、固件和模块应完整保留。当前不会自动下载镜像、提取内核或安装原生依赖。ARM64 兼容性已验证到上述特定 LineageOS 镜像，其他镜像仍需分别验收。
+旧配置中的 `python` 已无作用，可以删除。QEMU 的 DLL、固件和模块应完整保留。普通裸 JAR 不携带下载清单，需外置运行时；下载版提供已锁定的原生依赖和镜像，仍不会自动寻找任意 ROM 或提取内核。ARM64 兼容性已验证到上述特定 LineageOS 镜像，其他镜像仍需分别验收。
 
 ## 显示与生命周期
 

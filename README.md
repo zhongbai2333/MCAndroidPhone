@@ -1,10 +1,10 @@
 # MCAndroidPhone
 
-**Windows / WSL2 接续开发：先读 [2026-09-09 交接文档](docs/windows-wsl-handoff-2026-09-09.md)**，包含 Go 镜像构建、Windows 回归、源码与本地产物边界。
+**下载版与 Mac 接续开发：先读 [双架构下载版](docs/release-downloads.md)**。正在准备一个内置 Windows AMD64、macOS ARM64 原生运行时的通用 JAR；完整 Android Go 镜像保留 WebView，首次使用单独下载。最终产物与新 ARM64 镜像的 M4 实机验收仍在推进。
 
 在 Minecraft 中使用真正运行的安卓手机。独立 NeoForge Mod，无需 NCPB、NetMusic 或 SceneEditor；目标为 Minecraft 26.1.2、NeoForge 26.1.2.76、Java 25。
 
-**主手右键手机后，由 Java 在后台启动 QEMU 和所需的 FFmpeg，并直接处理画面与触控；玩家无需安装 Python。** 不必预先启动桥接脚本。普通构建使用外部运行时；平台内置包可自动校验、解压原生依赖与 Android 镜像。手机数据按物品 UUID 持久保存。Mac ARM64 本地包与摄像头通道的实际验收范围见 [本机功能验收](docs/local-features.md)，六平台成品尚未全部生成。[配置与启动说明](docs/runtime.md)
+**主手右键手机后，由 Java 在后台启动 QEMU 和所需的 FFmpeg，并直接处理画面与触控；玩家无需安装 Python。** 不必预先启动桥接脚本。普通构建使用外部运行时；下载版可自动校验、解压原生依赖，并下载、校验和缓存对应架构的 Android 镜像。手机数据按物品 UUID 持久保存。Mac ARM64 本地包与摄像头通道的实际验收范围见 [本机功能验收](docs/local-features.md)，六平台成品尚未全部生成。[配置与启动说明](docs/runtime.md)
 
 M4 Mac mini 从 [迁移与验收步骤](docs/mac-handoff.md) 开始；实测范围见 [跨平台验证](docs/portable-validation.md)。Mac/Linux 默认采用 CPU 传输，GPU 探针通过不等于端到端零拷贝完成。
 
@@ -12,7 +12,7 @@ M4 已通过 Android 16 / LineageOS ARM64 的真实启动、Java 触控和游戏
 
 游戏位置/姿态联动已完成第一阶段的真实 Android API 验证；正式 HAL 接入和双架构 Go 镜像构建配置已加入，完整定制系统尚待 Linux 编译。见 [联动实现与验收边界](docs/game-environment.md)、[镜像构建](android/image/README.md)。
 
-当前 Java 迁移产物需本地构建；[此前发布的预览版](https://github.com/zhongbai2333/MCAndroidPhone/releases/tag/v0.1.0-prototype) 使用旧 Python 后端。此次未更新远端发布。
+下载版版本为 `0.2.0-dev.20260913`，正在构建与验收；最终以 [GitHub Releases](https://github.com/zhongbai2333/MCAndroidPhone/releases) 的附件及说明为准。`v0.1.0-prototype` 是旧 Python 后端，不能代替新包测试。
 
 ## 快速开始
 
@@ -61,7 +61,7 @@ Java `core` 和 `mod` 已合并为根 Gradle 项目，不再分别构建。协�
 | `scripts` | 开发测试、环境准备和兼容诊断工具 |
 | `docs` | 配置、协议、架构和验证记录 |
 
-构建：`gradlew.bat build`。产物：`build/libs/mcandroidphone-0.1.0-prototype.jar`。客户端和服务器均安装该 JAR，原生模拟器仅在客户端运行。[独立版说明](docs/standalone.md)
+构建：`gradlew.bat build`。产物：`build/libs/mcandroidphone-0.2.0-dev.20260913.jar`。客户端和服务器均安装该 JAR，原生模拟器仅在客户端运行。[独立版说明](docs/standalone.md)
 
 本次整理将原模块目录和重复启动辅助文件备份到 `.runtime/layout-backup-20260908/`，方便回查；它们不参与构建，也不进入发行 JAR。
 
@@ -76,6 +76,6 @@ $env:PYTHONPATH = Join-Path $PWD 'bridge'
 
 `runtimeSelfTest` 和 `test-phone.cmd quick` 只需要 Java，验证 QMP/RFB/D-Bus、帧租约、启动取消、阻塞管道及 JVM 强杀后的子孙进程清理。上面的 Python 命令仅用于旧外部诊断回归。[Java 迁移与实测](docs/java-runtime-migration.md)
 
-当前不支持音频、多指和多人共享。手机数据已支持按物品 UUID 持久保存，正常关机仍需镜像配合，详见 [关机契约](docs/guest-shutdown.md)。普通模组构建使用外置 Android 镜像、QEMU/DLL/固件及 FFmpeg/ANGLE；平台内置候选另行打包，尚未六平台发布。Windows D-Bus/D3D11 的 Java 版本仍需 Windows 实机复测。SDK Emulator 保留外部诊断入口；VNC/BIOS 也可由管理器启动。
+当前不支持音频、多指和多人共享。手机数据已支持按物品 UUID 持久保存，正常关机仍需镜像配合，详见 [关机契约](docs/guest-shutdown.md)。普通模组构建使用外置 Android 镜像、QEMU/DLL/固件及 FFmpeg/ANGLE；平台内置候选另行打包，尚未六平台发布。Windows D-Bus/D3D11 Java 路径已通过此前 Go 镜像实机回归；新发布镜像另行验收。SDK Emulator 保留外部诊断入口；VNC/BIOS 也可由管理器启动。
 
 项目代码为 MIT；第三方原生运行时和系统镜像遵循各自许可证。

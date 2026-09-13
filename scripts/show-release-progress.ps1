@@ -1,4 +1,4 @@
-﻿param([switch]$Once, [ValidateRange(5,300)][int]$IntervalSeconds=5)
+param([switch]$Once, [ValidateRange(5,300)][int]$IntervalSeconds=5)
 $ErrorActionPreference='Stop'
 $probe=@"
 import json,re,subprocess
@@ -10,14 +10,14 @@ def tail(p,limit=262144):
   f.seek(0,2);f.seek(max(0,f.tell()-limit));return f.read().decode('utf-8',errors='replace')
 status=tail(base/'status.log')
 state=subprocess.check_output(['systemctl','show','mcphone-full-release-20260913','-p','ActiveState','-p','Result','-p','MemoryCurrent','-p','MemorySwapCurrent'],text=True)
-result={'state':dict(x.split('=',1) for x in state.splitlines() if '=' in x),'stage':status.splitlines()[-1:] or ['Waiting for build supervisor'],'arches':[],'finished':'PIPELINE_EXIT=' in status}
+result={'state':dict(x.split('=',1) for x in state.splitlines() if '=' in x),'stage':status.splitlines()[-1:] or ['Waiting for build supervisor'],'arches':[],'finished':'PIPELINE_EXIT=' in status.rsplit('RESUME_ARM64_INCREMENTAL',1)[-1]}
 for arch in ['amd64','arm64']:
  text=tail(base/(arch+'-build.log'));matches=re.findall(r'\[\s*(\d+)%\s+(\d+)/(\d+)(?:\s+([^\]]*))?\]',text)
  ok=('ARTIFACTS_PRESERVED_'+arch) in status
  active=('BUILDING_'+arch+'_FULL') in status
- matches=[m for m in matches if int(m[2])>5]
+ matches=[m for m in matches if int(m[2])>=1000]
  percent,done,total,eta=matches[-1] if matches else ('0','0','0','')
- result['arches'].append({'arch':arch,'percent':100 if ok else int(percent),'done':done,'total':total,'eta':eta,'status':'Done' if ok else (('Building' if matches else 'Configuring') if active else 'Queued'),'last':text.splitlines()[-1:] or ['']})
+ result['arches'].append({'arch':arch,'percent':100 if ok else min(99,int(percent)),'done':done,'total':total,'eta':eta,'status':'Done' if ok else (('Building' if matches else 'Configuring') if active else 'Queued'),'last':text.splitlines()[-1:] or ['']})
 print(json.dumps(result))
 "@
 $Host.UI.RawUI.WindowTitle='MCAndroidPhone - Dual-architecture build progress'

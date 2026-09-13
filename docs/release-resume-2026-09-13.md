@@ -1,6 +1,8 @@
 # 双架构下载版暂停点 · 2026-09-13
 
-用户明确要求暂停 ARM64 构建，明天再继续。不要自动恢复、发布 Release 或启动新的构建。
+历史暂停记录：用户已于 2026-09-13 11:13 明确要求“继续”，ARM64 增量构建已恢复；以下暂停状态用于解释旧日志，不能再据此阻止已授权的续跑。
+
+恢复使用相同 24 GiB / 12 路配置。新 wrapper 保存为 `.runtime/release-20260913/pipeline-resume.sh`，仅构建 ARM64，旧日志另存，并修正 TERM/INT 退出状态。原生运行时与下载代码提交 `eb5ef45` 已推送。实时进度窗口过滤准备阶段的小计数，并只读取最后一次恢复后的退出标记。
 
 ## 已确认的方向
 
@@ -44,3 +46,14 @@ WSL Ubuntu-24.04 / zhongbai233，VHDX 在 `E:/WSL/Ubuntu-24.04/ext4.vhdx`：
 5. 验证实际成品首次下载、解码、启动、缓存复用；BootBenchmark 支持 `benchmarkPrepareSeconds`，用于首次下载的准备期，启动帧仍有单独 200 秒上限。保留旧手机和默认 v5 配置。
 6. 新 `InstallReleaseRuntime.java PLATFORM_JAR CACHE_GAME NEW_PROPERTIES` 可把发布包安装为源码开发所需的运行配置，随后 `test-phone.sh qemu --runtime-config ...`，帮助 Mac 无需 Windows 继续开发。工具目前已编译，尚待真实发布 JAR 验收。
 7. 完成许可/源输入说明、发布说明、Mac 交接及实际测试边界，再推送、CI、创建开发版 Release 并上传。主分支 main 是当前分支祖先；是否快进 main 应在完成新代码验收后处理。
+## 恢复后的验证与运行中流程（11:33）
+
+- ARM64 正在增量构建，约 31,645 / 104,495 步（30%）；总步数会随 Ninja 图变化，不能据此推算精确完工时间。
+- 原构建监督 unit 仍是 `mcphone-full-release-20260913`。后续流程 `.runtime/release-20260913/finish-local-packages.ps1` 已启动，等待本次成功标记，再压缩 ARM64、复制干净三盘和源输入清单，生成 Mac 包并合并 universal JAR。日志 `.runtime/evidence/release-postbuild-20260913.log`；完成标志 `.runtime/release-20260913/local-packages-completed.json`。失败即停止，不自动发布 Release。
+- 后续流程锁定当前裸 JAR 的 SHA-256（`.runtime/release-20260913/base-jar.sha256`），运行期间不要覆盖 `build/libs/mcandroidphone-0.2.0-dev.20260913.jar`；否则会主动失败，避免混合不同代码版本。
+- AMD64 XZ 已完成：803,300,256 字节；完整镜像 ZIP 803,309,655 字节，SHA-256 `55e8d0f23e2cb1552035e7c4b107db3f573fd32e47a6c937d80d453228c70ee7`。
+- Windows 候选 JAR 113,624,552 字节，位于 `.runtime/release-20260913/artifacts/`；已补齐 86 个 MSYS2 包的元数据、来源和许可证，并从 10 个对应源码包补充上游版权文本。
+- 新 full AMD64 三盘真实启动通过：首传输帧 127,265 ms，Android boot completed 133,188 ms，35 帧，关机 `guest-confirmed`。与 ARM64 编译/压缩并行，不能作为空闲性能基准；此测试排空 GPU 帧，未渲染 MC。证据 `.runtime/evidence/release-amd64-full-boot-20260913/result.json`。
+- 候选 Windows JAR 实际原生依赖安装、803 MB 镜像解码和移走 ZIP 后的离线复用通过。发布前使用本地已校验 ZIP 填充下载缓存，**还不是 GitHub 匿名下载验证**。安装配置 `.runtime/evidence/release-windows-package-install-20260913/installed.properties` 与 `offline-reused.properties` 字节一致。
+- 新代码 `eb5ef45` 的完整 CI run `34735105331` 已全部通过，包含三个宿主核心测试、Mod 构建、XZ 和 universal 合并测试。
+- 还需：本轮 universal 成品的实际 Windows 游戏渲染验收、GitHub 匿名首次下载、最后的分发说明/源码输入附件与 Release 发布。新的 Go ARM64/HVF/画面留给 M4 实机验收。用户随后的 zstd 提问尚未改变本轮 XZ 发布基线，没有另启重编或压缩实验。

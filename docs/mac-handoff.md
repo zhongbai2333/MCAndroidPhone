@@ -1,5 +1,7 @@
 # Mac mini M4 交接
 
+2026-09-13 新增：准备通过一个通用 JAR 加两套独立 Android Go 下载包接续开发。M4 可以复用发布包的 QEMU 和镜像，无需保持 Windows 开机或同步整个 Android 源码；步骤及本轮尚待验收项目见 [双架构下载版](release-downloads.md)。以下记录仍用于区分此前社区镜像的实测结果。
+
 M4 Mac mini 已通过 Java 核心/生命周期、完整构建、图案和固件测试，并完成 Android 16 / LineageOS ARM64 的启动、触控及游戏内滑动解锁、桌面显示、收纳和资源重载，详见 [真实 Android 验收](android-arm64-validation.md)。Mac 默认走 VNC → Java → FFmpeg → NV12 → OpenGL 的 CPU 路径；IOSurface 同进程探针已通过，但 QEMU 的 IOSurface 跨进程后端尚未实现。
 
 ## 在 M4 上开始
