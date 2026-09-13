@@ -1,0 +1,9 @@
+# ARM64 JNI acceptance probe
+
+`LINEAGE_ROOT=/path/to/prepared/lineage bash android/native-bridge/probe/build.sh /absolute/NEW/output` builds a small APK from existing AOSP tools. It contains only AArch64 JNI code and is signed using AOSP's public development test key. No private signing key is included. Success text is `ARM64 JNI PASS: 42`; Java has no fallback.
+
+Compile `GuestProbeHarness.java` with JDK 25 and the compiled core/JAR on the classpath. Run its fully qualified class `com.zhongbai233.mcandroidphone.core.GuestProbeHarness` with `runtime.properties NEW-evidence-directory probe.apk`. Include the Mod resources/native guard on the classpath. Use `display=vnc,gpu=virtio` for QMP screenshots; VirGL scanouts do not expose a QMP software surface.
+
+The harness creates a separate persistent phone, writes `latest.png`, and accepts `tap U V`, `swipe U V U2 V2`, `text ASCII`, `key HOME|BACK|APP_SWITCH`, `enter`, and `quit` through `command.txt`. Write a temporary file, CLOSE it, then atomically rename it to `command.txt`; writing that file in place can race the consumer on Windows. It stops after 25 minutes and shuts down the guest. To power-cycle a test phone, set its recorded `deviceId` and `probeGameDirectory` to the prior test game directory; use a new evidence directory.
+
+The loopback HTTP server serves exactly `/probe.apk` and records the guest URL. If Android's DownloadManager reports the network offline, use a dedicated FAT16 USB image containing only this APK. Never disable SELinux or ship a modified test userdata disk. The 2026-09-13 accepted run used a 16 MiB FAT16 image, `mcopy` of the APK, `fsck.vfat -n`, QMP `blockdev-add` with `read-only=true`, and `device_add` for `usb-storage` on `usb.0`. Android's normal file browser/package installer then installed it. Screenshots before and after a clean power cycle are retained in docs/handoff-evidence.

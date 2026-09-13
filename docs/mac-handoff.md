@@ -1,5 +1,7 @@
 # Mac mini M4 交接
 
+2026-09-13 AMD64 转译补充：Digitalis 已完成完整镜像构建，纯 ARM64 JNI 应用及重启后验收通过；实验 ZIP 可在 0.2.1 镜像管理中导入。M4 应继续使用原生 ARM64 官方包，不需要此 AMD64 转译镜像。详见 [转译验收](../android/native-bridge/README.md)。
+
 2026-09-13 镜像管理更新：0.2.1 已加入 zstd 及“选项 → 安卓镜像…”；Windows、Linux、macOS CI 的私有原生解码和镜像库测试通过。M4 仍需验证完整 Go ARM64 安卓启动和交互，不能将解码 CI 当作 HVF/图形验收。见 [镜像管理](image-manager.md)。
 
 2026-09-13 新增：现在可以通过一个通用 JAR 加两套独立 Android Go 下载包接续开发。M4 可以复用发布包的 QEMU 和镜像，无需保持 Windows 开机或同步整个 Android 源码；步骤及本轮尚待验收项目见 [双架构下载版](release-downloads.md)。以下记录仍用于区分此前社区镜像的实测结果。

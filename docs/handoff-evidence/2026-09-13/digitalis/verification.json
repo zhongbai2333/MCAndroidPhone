@@ -1,0 +1,49 @@
+{
+  "host": "Windows AMD64",
+  "accelerator": "WHPX",
+  "digitalisCommit": "cf5842168cfbc001fe0cdc44ca340fc2525fb269",
+  "fullImageBuild": "PASS",
+  "imageBuildSeconds": 815,
+  "initialGpuTransportBoot": {
+    "gpuRendered": false,
+    "storage": "persistent",
+    "runtimeReadyMs": 8917,
+    "firstTransportFrameMs": 92561,
+    "bootCompletedMs": 96578,
+    "frames": 36,
+    "bootCompleted": true,
+    "finalState": "STOPPED",
+    "shutdownOutcome": "guest-confirmed"
+  },
+  "arm64OnlyJni": "PASS: 42",
+  "arm64OnlyJniAfterPowerCycle": "PASS: 42",
+  "appTestDisplay": "virtio 2D / VNC, QMP screenshot",
+  "appInstall": "Read-only FAT16 USB image, Android package installer; no ADB, no SELinux policy changes",
+  "apkSha256": "58aebb311e1c536363b859097cc1fec618ef0ab2aba2a881863467c37817d04e",
+  "cleanTemplates": {
+    "guestArch": "amd64",
+    "profile": "full",
+    "digitalisCommit": "cf5842168cfbc001fe0cdc44ca340fc2525fb269",
+    "files": {
+      "vda.qcow2": {
+        "bytes": 2194210816,
+        "sha256": "08d0e1eb6f14a598bc084b0c7ee56f9e0cfbfd80b4a9d3483691cb1df9cec539"
+      },
+      "vdb.qcow2": {
+        "bytes": 196864,
+        "sha256": "de001102cbc8ff7aa8eb6c69d750cf22b94104935a0de6277ec5f24509927745"
+      },
+      "efi_vars.fd": {
+        "bytes": 335360,
+        "sha256": "be0b35d7b31ca9b66bd634c6145480debf59502692d2a99144002d4d43be4b65"
+      }
+    }
+  },
+  "limitations": [
+    "ARM64 only; no 32-bit ARM",
+    "Minimal JNI probe does not establish GLES/Vulkan/game/media compatibility",
+    "Android download manager stayed offline while browser could reach host; virtual USB used",
+    "VNC colon input became semicolon; unrelated follow-up",
+    "No M4/HVF runtime acceptance of the new Go images in this session"
+  ]
+}
