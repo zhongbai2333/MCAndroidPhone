@@ -1,0 +1,23 @@
+{
+  "date": "2026-09-13",
+  "releaseUrl": "https://github.com/zhongbai2333/MCAndroidPhone/releases/tag/v0.2.0-dev.20260913",
+  "amd64": {
+    "anonymous": true,
+    "url": "https://github.com/zhongbai2333/MCAndroidPhone/releases/download/v0.2.0-dev.20260913/mcandroidphone-android-go-full-amd64-20260913.zip",
+    "mode": "resume final 4 MiB; prefix seeded from verified local archive",
+    "downloadedTailBytes": 4194304,
+    "productionInstallerExitCode": 0,
+    "archiveSha256Verified": true,
+    "allThreeDecodedImageHashesVerified": true,
+    "separateAuthenticatedFullGithubDownloadPassed": true
+  },
+  "arm64": {
+    "url": "https://github.com/zhongbai2333/MCAndroidPhone/releases/download/v0.2.0-dev.20260913/mcandroidphone-android-go-full-arm64-20260913.zip",
+    "authorizationHeader": false,
+    "httpStatus": 206,
+    "contentRange": "bytes 0-65535/683720715",
+    "downloadedBytes": 65536,
+    "matchesLocalVerifiedArchive": true
+  },
+  "limits": "ARM64 verifies only an anonymous range, not complete public download or Mac boot. AMD64 anonymous probe is resumed, not a fresh full network download."
+}

@@ -1,5 +1,7 @@
 # 双架构下载版暂停点 · 2026-09-13
 
+> 当前状态：两架构构建、压缩对比和 Windows 验收已完成，开发版已公开发布。下面的暂停/运行中条目为历史记录；以文末“最终完成状态”为准，不要重新启动旧构建流程。
+
 历史暂停记录：用户已于 2026-09-13 11:13 明确要求“继续”，ARM64 增量构建已恢复；以下暂停状态用于解释旧日志，不能再据此阻止已授权的续跑。
 
 恢复使用相同 24 GiB / 12 路配置。新 wrapper 保存为 `.runtime/release-20260913/pipeline-resume.sh`，仅构建 ARM64，旧日志另存，并修正 TERM/INT 退出状态。原生运行时与下载代码提交 `eb5ef45` 已推送。实时进度窗口过滤准备阶段的小计数，并只读取最后一次恢复后的退出标记。
@@ -57,3 +59,14 @@ WSL Ubuntu-24.04 / zhongbai233，VHDX 在 `E:/WSL/Ubuntu-24.04/ext4.vhdx`：
 - 候选 Windows JAR 实际原生依赖安装、803 MB 镜像解码和移走 ZIP 后的离线复用通过。发布前使用本地已校验 ZIP 填充下载缓存，**还不是 GitHub 匿名下载验证**。安装配置 `.runtime/evidence/release-windows-package-install-20260913/installed.properties` 与 `offline-reused.properties` 字节一致。
 - 新代码 `eb5ef45` 的完整 CI run `34735105331` 已全部通过，包含三个宿主核心测试、Mod 构建、XZ 和 universal 合并测试。
 - 还需：本轮 universal 成品的实际 Windows 游戏渲染验收、GitHub 匿名首次下载、最后的分发说明/源码输入附件与 Release 发布。新的 Go ARM64/HVF/画面留给 M4 实机验收。用户随后的 zstd 提问尚未改变本轮 XZ 发布基线，没有另启重编或压缩实验。
+
+## 最终完成状态（2026-09-13）
+
+- ARM64 full 构建于 12:28 完成；两架构干净三盘均保存并通过检查，临时构建 swap 已回收。后处理曾缺少 `MergeRuntimePackages` 编译类，补编工具后合并成功，`local-packages-completed.json` 已生成；旧错误日志不代表当前失败。
+- [开发版 v0.2.0-dev.20260913](https://github.com/zhongbai2333/MCAndroidPhone/releases/tag/v0.2.0-dev.20260913) 已公开为 prerelease。通用 JAR 137,143,696 字节，完整 AMD64 镜像 ZIP 803,309,655 字节，ARM64 镜像 ZIP 683,720,715 字节；两镜像均保留 WebView。另附 SHA-256、Android overlay 源码和两架构构建输入，共八个附件，服务器摘要与本地文件全部一致。
+- `3565278` 已推送开发分支和 main，完整 CI run 34740272110、34740270666、34740270630 均成功。Release 继续使用经过验证的原 XZ 配置，未改变解码器。
+- 通用 JAR 在 Windows 实际安装、镜像解码及 Android 启动成功。Minecraft 源码开发运行使用该候选包安装出的运行时和新 full 镜像：720×1280，D3D11 CPU copies=0 / GPU cache copy=1，收起再拿出和资源重载均保持连接。不要将源码游戏测试表述为游戏直接加载了通用发布 JAR。
+- GitHub 下载验收：发布前通过认证 API 完整下载 AMD64 的 803 MB ZIP，并由生产安装代码完成归档与三盘校验；发布后不带令牌，使用原始公开 URL 续传最后 4 MiB，同一生产安装代码完成完整校验和解码。ARM64 公开 URL 的匿名 64 KiB Range 请求返回 206，字节与本地归档一致。未额外重复两架构全部字节的匿名下载。
+- [完整压缩对比](compression-comparison-2026-09-13.md)：两架构各五种配置均解码并校验全盘 SHA-256。128 MiB 字典 XZ 只省 3.25% / 2.04%；zstd -22 体积增加 0.77% / 6.86%，原生解码加哈希约快 11–12 倍。Java 当前 64 MiB XZ 内存限制不接受更大字典；zstd 尚未接入 Mod，实验速度不是游戏首次安装或冷启动实测。
+- **接续任务在 M4 Mac mini**：验证新 Go ARM64 镜像的实际 HVF 启动、画面与交互。原生 Mac QEMU CI 探针/签名/重定位已经通过，不等于 Android 实机验收；Mac 当前仍为 CPU 显示路径，不宣称 IOSurface 零拷贝。使用 [Mac 交接文档](mac-handoff.md) 和 [下载版安装说明](release-downloads.md)。
+- 最终公开下载证据：`docs/handoff-evidence/2026-09-13/download-release/public-download-checks.json`；详细本地日志位于 `.runtime/evidence/release-public-resume-20260913.log` 与 `.runtime/evidence/release-public-arm64-range-20260913/`。CDN 临时签名响应头仅本地保存，不提交。
