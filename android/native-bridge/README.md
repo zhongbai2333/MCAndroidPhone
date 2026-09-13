@@ -18,4 +18,16 @@
 
 随后 `MCANDROIDPHONE_REUSE_GRAPH=true LINEAGE_ROOT=... bash android/native-bridge/build-probe.sh` 直接构建已解析的两个 Android x86_64 输出目标，544 步在约 42 秒完成，转译库与 runner 均成功。systemd 报告的极小 MemoryPeak 未覆盖该阶段全部子进程，不作为实际内存需求结论。
 
-完整镜像装配已启动，使用原树、已有输出和 12 路；对本版本 Soong，经检查 `config.go` 后采用 `m --skip-config --config-only --no-soong-only -j 12 vm-utm-zip`，复用已确认的图但执行 Kati 和镜像构建。这是当前源码版本的恢复办法，**不要在源码/产品配置改变后直接跳过图生成**。原始 full 镜像已独立保存，构建输出不等于发布完成。
+完整镜像装配成功（13 分 35 秒），使用原树、已有输出和 12 路；对本版本 Soong，经检查 `config.go` 后采用 `m --skip-config --config-only --no-soong-only -j 12 vm-utm-zip`，复用已确认的图但执行 Kati 和镜像构建。这是当前源码版本的恢复办法，**不要在源码/产品配置改变后直接跳过图生成**。原始 full 镜像已独立保存，构建输出不等于发布完成。
+
+## 实际验收结果
+
+2026-09-13，Windows AMD64 / WHPX 的干净新手机启动成功：约 96.6 秒观察到 boot completed，D-Bus / VirGL 收到 36 帧，关机为 guest-confirmed。这只是传输验收，不等于 GPU 画面已渲染。
+
+随后用独立持久手机、virtio 2D / VNC 画面验收：经安卓安装器从只读 FAT16 USB 盘安装 `probe/` 构建的 APK，显示 **ARM64 JNI PASS: 42**。APK 唯一原生库为 `lib/arm64-v8a/libmcphone_arm64_probe.so`，ELF Machine 为 AArch64，没有 x86 库或 Java 回退。正常关机、重新启动同一手机后再次通过。测试未打开 ADB，也未改变 SELinux。截图和模板摘要见 [验收记录](../../docs/handoff-evidence/2026-09-13/digitalis/verification.json)。
+
+实验镜像为 `mcandroidphone-android-go-amd64-digitalis-experimental-20260913.zip`，837,243,308 字节，SHA-256 `d25516b78ddf342dbe87165b2c17eb635e7c97418434ef3cc0c2a2d52799a2ed`。保留 WebView；系统盘为 2,194,210,816 字节，比原 full 增加约 31 MB。发布的是从构建输出保存的干净三盘模板，未使用已安装探针的测试手机盘。
+
+在 0.2.1 的“选项 → 安卓镜像… → 导入”中选择该 ZIP，架构 AMD64，再设为新手机默认。基础 ARM64 JNI 已验证，但复杂应用、图形代理和媒体兼容性仍需继续测试，因此它作为实验附件提供，暂不替换官方默认下载。
+
+验收中另外发现：浏览器可以访问 QEMU 宿主，Android 下载器却将网络判为离线；VNC 的冒号输入可变成分号。这些不是 JNI 转译失败，已记录为后续网络/键盘问题。只读 USB 安装用于绕开测试环境的下载阻塞，不修改发行镜像。

@@ -17,4 +17,4 @@ zstd 使用固定 `zstd-jni 1.5.7-16`，私有类加载器隔离，JAR SHA-256 �
 
 2026-09-13 Windows 全盘解压加 SHA-256 实测（从最终 Mod codec 读取，不写输出盘）：AMD64 2,970 ms / 2,163,605,504 字节，ARM64 2,614 ms / 1,915,813,888 字节。真实首次安装还包括网络、磁盘写入和原生依赖安装；这不是 Android 冷启动耗时。
 
-AMD64 ARM64 应用转译正在独立验证，现有官方镜像未宣称包含可用转译层。见 [转译集成](../android/native-bridge/README.md)。
+AMD64 的 Digitalis 实验镜像已通过纯 ARM64 JNI 应用及重启后的运行验证，可从同一 Release 下载带 `digitalis-experimental` 的 ZIP 导入。基础官方默认镜像仍不含转译层；实验版尚不代表复杂游戏/GLES/Vulkan 兼容。见 [转译集成](../android/native-bridge/README.md)。
